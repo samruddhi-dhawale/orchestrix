@@ -7,6 +7,7 @@ import Pipelines from "./pages/Pipelines";
 import Executions from "./pages/Executions";
 import Execution from "./pages/Execution";
 import Settings from "./pages/Settings";
+import AdminAudit from "./pages/AdminAudit";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { isAuthenticated } from "./services/auth";
@@ -32,6 +33,8 @@ function App() {
             <Route path="/pipelines" element={<Pipelines />} />
             <Route path="/executions" element={<Executions />} />
             <Route path="/execution/:executionId" element={<Execution />} />
+            <Route path="/admin/audit" element={<AdminAudit />} />
+            <Route path="/audit" element={<AdminAudit />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>

@@ -73,6 +73,20 @@ function Sidebar() {
             <span>Settings & Cloud</span>
           </NavLink>
         </div>
+
+        {isAdmin && (
+          <div className="navigation-section">
+            <span className="navigation-label">ADMINISTRATION</span>
+
+            <NavLink
+              to="/admin/audit"
+              className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
+            >
+              <span className="navigation-icon"><ShieldCheck size={18} /></span>
+              <span>User & Launch Audit</span>
+            </NavLink>
+          </div>
+        )}
       </nav>
 
       <div className="sidebar-bottom">
