@@ -6,7 +6,7 @@ function Settings() {
   const navigate = useNavigate();
   const [user, setUser] = useState({
     username: "developer",
-    name: "Samruddhi K.",
+    name: "Samruddhi D.",
     role: "Lead DevOps Engineer",
     email: "developer@orchestrix.io",
     organization: "Orchestrix Core Platform",

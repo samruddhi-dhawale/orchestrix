@@ -12,7 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { isAuthenticated } from "./services/auth";
 
 function RootRedirect() {
-  return isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
+  return <Navigate to="/login" replace />;
 }
 
 function App() {

@@ -51,7 +51,7 @@ function Login() {
       const fallbackUser = {
         username: username,
         role: fallbackRole,
-        name: fallbackRole === "ADMIN" ? "System Administrator" : "Samruddhi K. (Lead Developer)",
+        name: fallbackRole === "ADMIN" ? "System Administrator" : "Samruddhi D. (Lead Developer)",
         email: `${username}@orchestrix.io`,
         permissions: fallbackRole === "ADMIN"
           ? ["LAUNCH_ALL", "DEPLOY_PRODUCTION", "MANAGE_CLOUD"]

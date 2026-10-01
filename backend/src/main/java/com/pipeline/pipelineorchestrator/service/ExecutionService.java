@@ -50,41 +50,7 @@ public class ExecutionService {
 
     @PostConstruct
     public void initSampleExecutions() {
-        seedExecution(
-                "8f4c219a-9e12-4f81-a901-d72bca531980",
-                "payment-gateway",
-                "sub-pay-core",
-                "main",
-                "production",
-                ExecutionStatus.SUCCESS,
-                LocalDateTime.now().minusMinutes(42),
-                8850,
-                "BLUE_GREEN"
-        );
-
-        seedExecution(
-                "3ba917c0-df44-419b-bc11-817e040aa912",
-                "component-a",
-                "sub-a1",
-                "develop",
-                "development",
-                ExecutionStatus.SUCCESS,
-                LocalDateTime.now().minusHours(2).minusMinutes(15),
-                7210,
-                "ROLLING"
-        );
-
-        seedExecution(
-                "c092df45-21e9-4e56-91ad-639a041fbc88",
-                "auth-service",
-                "sub-auth-tokens",
-                "feature/refresh-token",
-                "staging",
-                ExecutionStatus.FAILED,
-                LocalDateTime.now().minusHours(5),
-                4890,
-                "CANARY"
-        );
+        // Starts completely clean with 0 executions. Only increases when the user launches a pipeline!
     }
 
     public PipelineExecution executePipeline(PipelineRequest request) {

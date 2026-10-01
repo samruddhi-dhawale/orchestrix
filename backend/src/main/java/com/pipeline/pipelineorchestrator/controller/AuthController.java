@@ -25,7 +25,7 @@ public class AuthController {
         boolean isAdmin = "admin".equalsIgnoreCase(username);
 
         String role = isAdmin ? "ADMIN" : "DEVELOPER";
-        String name = isAdmin ? "System Administrator" : "Samruddhi K. (Lead Developer)";
+        String name = isAdmin ? "System Administrator" : "Samruddhi D. (Lead Developer)";
         List<String> permissions = isAdmin
                 ? List.of("LAUNCH_ALL", "DEPLOY_PRODUCTION", "MANAGE_CLOUD", "VIEW_LOGS", "SYSTEM_SETTINGS")
                 : List.of("LAUNCH_DEV_STAGING", "VIEW_LOGS", "VIEW_ARTIFACTS");
