@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Plus, Search, Filter, RefreshCw, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Plus, Search, Filter, RefreshCw, CheckCircle2, Clock, AlertCircle, Play } from "lucide-react";
 import api from "../services/api";
 import RunsTable from "../components/RunsTable";
 

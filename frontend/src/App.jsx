@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -18,7 +18,7 @@ function RootRedirect() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         {/* Public Route: Login */}
         <Route path="/login" element={<Login />} />
@@ -42,7 +42,7 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<RootRedirect />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

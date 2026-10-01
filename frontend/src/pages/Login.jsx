@@ -65,22 +65,34 @@ function Login() {
         : "/dashboard";
       navigate(nextPath);
     } catch (err) {
-      console.warn("Backend login issue, checking credentials locally:", err);
-      // Resilient fallback
-      const fallbackRole = username.toLowerCase().includes("admin") ? "ADMIN" : "DEVELOPER";
-      const fallbackUser = {
-        username: username,
-        role: fallbackRole,
-        name: fallbackRole === "ADMIN" ? "System Administrator" : "Samruddhi D. (Lead Developer)",
-        email: `${username}@orchestrix.io`,
-        permissions: fallbackRole === "ADMIN"
-          ? ["LAUNCH_ALL", "DEPLOY_PRODUCTION", "MANAGE_CLOUD"]
-          : ["LAUNCH_DEV_STAGING", "VIEW_LOGS"],
-        token: "session-" + Date.now(),
-        lastVisitedPath: "/dashboard"
-      };
-      setCurrentUser(fallbackUser);
-      navigate("/dashboard");
+      console.warn("Backend authentication error:", err);
+      if (err.response && err.response.status === 401) {
+        setError("Account not found or incorrect password. Please check your credentials or click 'Create Account / Register' to sign up.");
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        // Fallback for offline mode: ONLY allow exact verified demo accounts
+        const u = username.trim().toLowerCase();
+        const p = password.trim();
+        if ((u === "developer" && p === "dev123") || (u === "admin" && p === "admin123")) {
+          const fallbackRole = u === "admin" ? "ADMIN" : "DEVELOPER";
+          const fallbackUser = {
+            username: u,
+            role: fallbackRole,
+            name: fallbackRole === "ADMIN" ? "System Administrator" : "Samruddhi D. (Lead Developer)",
+            email: `${u}@orchestrix.io`,
+            permissions: fallbackRole === "ADMIN"
+              ? ["LAUNCH_ALL", "DEPLOY_PRODUCTION", "MANAGE_CLOUD"]
+              : ["LAUNCH_DEV_STAGING", "VIEW_LOGS"],
+            token: "session-" + Date.now(),
+            lastVisitedPath: "/dashboard"
+          };
+          setCurrentUser(fallbackUser);
+          navigate("/dashboard");
+        } else {
+          setError("Account not found or incorrect password. Please check your credentials or click 'Create Account / Register' to sign up.");
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -175,8 +187,21 @@ function Login() {
         </div>
 
         {error && (
-          <div className="login-error-msg">
-            <AlertCircle size={15} />
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            background: "#fef2f2",
+            border: "1.5px solid #ef4444",
+            color: "#b91c1c",
+            padding: "12px 14px",
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 500,
+            marginBottom: 16,
+            lineHeight: 1.4
+          }}>
+            <AlertCircle size={18} style={{ flexShrink: 0, color: "#dc2626" }} />
             <span>{error}</span>
           </div>
         )}
