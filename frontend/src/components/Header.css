@@ -1,0 +1,231 @@
+.app-header {
+  height: 72px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 30px;
+
+  background: #ffffff;
+  border-bottom: 1px solid #e7eaf0;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-page-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #172033;
+  letter-spacing: -0.01em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.environment-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 7px 12px;
+
+  background: #f5f7fb;
+  border: 1px solid #e6e9f0;
+  border-radius: 8px;
+
+  color: #4b5568;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.environment-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px #dcfce7;
+}
+
+.header-divider {
+  width: 1px;
+  height: 30px;
+  background: #e7eaf0;
+}
+
+.notification-button {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e7eaf0;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #5b6475;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-button:hover {
+  background: #f7f8fb;
+  border-color: #d9deea;
+}
+
+.notification-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: linear-gradient(
+    135deg,
+    #635bff,
+    #7c3aed
+  );
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name {
+  color: #172033;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-role {
+  color: #8a93a5;
+  font-size: 11px;
+}
+
+.user-chevron {
+  margin-left: 2px;
+  color: #8a93a5;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .app-header {
+    padding: 0 18px;
+  }
+
+  .header-page-title {
+    display: none;
+  }
+
+  .environment-badge {
+    display: none;
+  }
+
+  .user-info {
+    display: none;
+  }
+}
+
+/* Role Badges & Logout Button in Header */
+.user-menu-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.role-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.role-pill.admin {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #d8b4fe;
+}
+
+.role-pill.dev {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.header-logout-button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 6px;
+}
+
+.header-logout-button:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
