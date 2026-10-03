@@ -31,20 +31,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        List<String> allowedOrigins = new ArrayList<>(List.of(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "http://127.0.0.1:5173",
-                "http://127.0.0.1:3000"
-        ));
-
-        String envFrontendUrl = System.getenv("ORCHESTRIX_FRONTEND_URL");
-        if (envFrontendUrl != null && !envFrontendUrl.isBlank()) {
-            allowedOrigins.add(envFrontendUrl.trim());
-        }
-
         registry.addMapping("/**")
-                .allowedOriginPatterns(allowedOrigins.toArray(new String[0]))
+                .allowedOriginPatterns(
+                        "http://localhost:[*]",
+                        "http://127.0.0.1:[*]",
+                        "https://*.onrender.com",
+                        "https://*.vercel.app",
+                        "*"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .exposedHeaders("Authorization")

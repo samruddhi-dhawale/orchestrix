@@ -13,11 +13,13 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [slowNotice, setSlowNotice] = useState(false);
   const [error, setError] = useState("");
 
   const handleSignIn = async (e) => {
     e.preventDefault();
     setError("");
+    setSlowNotice(false);
 
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
@@ -28,6 +30,11 @@ function Login() {
     }
 
     setLoading(true);
+
+    // If server cold-start takes > 3.5s, inform the user
+    const timer = setTimeout(() => {
+      setSlowNotice(true);
+    }, 3500);
 
     try {
       const response = await api.post("/auth/login", {
@@ -57,10 +64,14 @@ function Login() {
           setError(err.response.data?.message || "Authentication failed. Please verify your credentials.");
         }
       } else {
-        setError("Unable to connect to authentication server. Please check your network or backend service.");
+        setError(
+          "Unable to connect to authentication server. If the cloud backend was sleeping, it may take 30–60 seconds to wake up. Please wait a moment and try again."
+        );
       }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
+      setSlowNotice(false);
     }
   };
 
@@ -95,6 +106,36 @@ function Login() {
           >
             <AlertCircle size={18} style={{ flexShrink: 0, color: "#dc2626" }} />
             <span>{error}</span>
+          </div>
+        )}
+
+        {slowNotice && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              background: "#eff6ff",
+              border: "1px solid #bfdbfe",
+              color: "#1d4ed8",
+              padding: "10px 12px",
+              borderRadius: 8,
+              fontSize: 12.5,
+              marginBottom: 16,
+              lineHeight: 1.4,
+            }}
+          >
+            <span
+              className="spinner-dot"
+              style={{
+                borderColor: "rgba(37,99,235,0.3)",
+                borderTopColor: "#2563eb",
+                flexShrink: 0,
+                width: 14,
+                height: 14,
+              }}
+            ></span>
+            <span>Connecting to cloud server... Cloud instance is waking up from idle (takes ~30–50s on first request).</span>
           </div>
         )}
 
