@@ -1,9 +1,13 @@
-// Simple, resilient client authentication service for Orchestrix
+import api from "./api";
+
+// Enterprise authentication service for Orchestrix
 
 export function getCurrentUser() {
   try {
     const raw = localStorage.getItem("orchestrix_user");
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      return JSON.parse(raw);
+    }
   } catch {
     // fallback
   }
@@ -12,17 +16,28 @@ export function getCurrentUser() {
 
 export function setCurrentUser(user) {
   if (user) {
-    localStorage.setItem("orchestrix_user", JSON.stringify(user));
+    // Ensure no raw passwords or sensitive credentials ever enter localStorage
+    const { password, passwordHash, ...safeUser } = user;
+    localStorage.setItem("orchestrix_user", JSON.stringify(safeUser));
   } else {
     localStorage.removeItem("orchestrix_user");
   }
 }
 
-export function logout() {
-  localStorage.removeItem("orchestrix_user");
-  window.location.href = "/login";
+export async function logout() {
+  try {
+    await api.post("/auth/logout");
+  } catch {
+    // Ignore network errors during logout
+  } finally {
+    localStorage.removeItem("orchestrix_user");
+    if (typeof window !== "undefined") {
+      window.location.hash = "#/login";
+    }
+  }
 }
 
 export function isAuthenticated() {
-  return !!getCurrentUser();
+  const user = getCurrentUser();
+  return Boolean(user && user.token);
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { User, ShieldCheck, Cloud, Package, Cpu, CheckCircle2, Server, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../services/auth";
 
 function Settings() {
   const navigate = useNavigate();
@@ -25,8 +26,7 @@ function Settings() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("orchestrix_user");
-    navigate("/login");
+    logout();
   };
 
   return (

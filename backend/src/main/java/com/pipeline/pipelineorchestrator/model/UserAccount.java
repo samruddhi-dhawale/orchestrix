@@ -3,12 +3,17 @@ package com.pipeline.pipelineorchestrator.model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class UserAccount {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private String username;
-    private String password;
+
+    @JsonIgnore
+    private String passwordHash;
+
     private String name;
     private String email;
     private String role; // "ADMIN" or "DEVELOPER"
@@ -19,9 +24,9 @@ public class UserAccount {
     public UserAccount() {
     }
 
-    public UserAccount(String username, String password, String name, String email, String role) {
+    public UserAccount(String username, String passwordHash, String name, String email, String role) {
         this.username = username;
-        this.password = password;
+        this.passwordHash = passwordHash;
         this.name = name;
         this.email = email;
         this.role = role != null ? role.toUpperCase() : "DEVELOPER";
@@ -38,12 +43,13 @@ public class UserAccount {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    @JsonIgnore
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getName() {

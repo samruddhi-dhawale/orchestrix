@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.pipeline.pipelineorchestrator.model.LoginAuditEntry;
@@ -21,15 +22,39 @@ public class UserService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    // Secure pre-computed standard BCrypt hashes (10 rounds)
+    // dev123:   $2a$10$Ehoi3o9Fx5lorAFSmQaKJufmeXKZLziDnd9qEC7eNupIpBIcaBrym
+    // admin123: $2a$10$XIOD6LoUzSnCH1ouJm.y5eXixDnCLe8ph3Sb1FDlDgrXxUOygAS3m
+    private static final String DEFAULT_DEV_HASH = "$2a$10$Ehoi3o9Fx5lorAFSmQaKJufmeXKZLziDnd9qEC7eNupIpBIcaBrym";
+    private static final String DEFAULT_ADMIN_HASH = "$2a$10$XIOD6LoUzSnCH1ouJm.y5eXixDnCLe8ph3Sb1FDlDgrXxUOygAS3m";
+
+    private final PasswordEncoder passwordEncoder;
+    private final LoginRateLimiter loginRateLimiter;
     private final Map<String, UserAccount> users = new ConcurrentHashMap<>();
     private final List<LoginAuditEntry> loginHistory = new CopyOnWriteArrayList<>();
 
+    public UserService(PasswordEncoder passwordEncoder, LoginRateLimiter loginRateLimiter) {
+        this.passwordEncoder = passwordEncoder;
+        this.loginRateLimiter = loginRateLimiter;
+    }
+
     @PostConstruct
     public void initDefaultUsers() {
-        // Pre-seeded enterprise accounts
+        // Read BCrypt hashes from environment or fallback to pre-computed hashes
+        String devHash = System.getenv("ORCHESTRIX_DEV_PASSWORD_HASH");
+        if (devHash == null || devHash.isBlank()) {
+            devHash = DEFAULT_DEV_HASH;
+        }
+
+        String adminHash = System.getenv("ORCHESTRIX_ADMIN_PASSWORD_HASH");
+        if (adminHash == null || adminHash.isBlank()) {
+            adminHash = DEFAULT_ADMIN_HASH;
+        }
+
+        // Enterprise accounts initialized with BCrypt hashes only - NO plaintext passwords
         UserAccount admin = new UserAccount(
                 "admin",
-                "admin123",
+                adminHash.trim(),
                 "System Administrator",
                 "admin@orchestrix.io",
                 "ADMIN"
@@ -38,7 +63,7 @@ public class UserService {
 
         UserAccount dev = new UserAccount(
                 "developer",
-                "dev123",
+                devHash.trim(),
                 "Samruddhi D. (Lead Developer)",
                 "developer@orchestrix.io",
                 "DEVELOPER"
@@ -50,13 +75,15 @@ public class UserService {
         loginHistory.add(new LoginAuditEntry("admin", "System Administrator", "ADMIN", "127.0.0.1 (Cloud Console)", "SUCCESS"));
     }
 
-    public UserAccount authenticate(String username, String password, String ipAddress) {
-        if (username == null || password == null) {
+    public UserAccount authenticate(String username, String rawPassword, String ipAddress) {
+        if (username == null || rawPassword == null) {
             return null;
         }
 
         UserAccount user = users.get(username.trim().toLowerCase());
-        if (user != null && user.getPassword().equals(password.trim())) {
+        if (user != null && passwordEncoder.matches(rawPassword.trim(), user.getPasswordHash())) {
+            // Success: reset rate limit attempts for this client IP
+            loginRateLimiter.resetAttempts(ipAddress);
             user.setLastLoginAt(LocalDateTime.now().format(FORMATTER));
             loginHistory.add(new LoginAuditEntry(
                     user.getUsername(),
@@ -68,11 +95,14 @@ public class UserService {
             return user;
         }
 
-        // Record failed attempt
+        // Record failed attempt in rate limiter
+        loginRateLimiter.recordFailedAttempt(ipAddress);
+
+        // Record failed attempt in audit log (NEVER log the raw password)
         loginHistory.add(new LoginAuditEntry(
-                username,
-                "Unknown User",
-                "UNAUTHORIZED",
+                username.trim(),
+                user != null ? user.getName() : "Unknown User",
+                user != null ? user.getRole() : "UNAUTHORIZED",
                 ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
                 "FAILED (Invalid Credentials)"
         ));
@@ -80,8 +110,8 @@ public class UserService {
         return null;
     }
 
-    public UserAccount register(String username, String password, String name, String email, String role) {
-        if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+    public UserAccount register(String username, String rawPassword, String name, String email, String role) {
+        if (username == null || rawPassword == null || username.trim().isEmpty() || rawPassword.trim().isEmpty()) {
             throw new IllegalArgumentException("Username and password cannot be empty");
         }
 
@@ -90,9 +120,12 @@ public class UserService {
             throw new IllegalArgumentException("User with username '" + username + "' already exists");
         }
 
+        // Hash the password with BCrypt before storing
+        String passwordHash = passwordEncoder.encode(rawPassword.trim());
+
         UserAccount newUser = new UserAccount(
                 key,
-                password.trim(),
+                passwordHash,
                 name != null && !name.trim().isEmpty() ? name.trim() : username,
                 email != null && !email.trim().isEmpty() ? email.trim() : key + "@orchestrix.io",
                 role != null ? role.toUpperCase() : "DEVELOPER"
@@ -109,6 +142,18 @@ public class UserService {
         ));
 
         return newUser;
+    }
+
+    public void recordLogout(String username, String ipAddress) {
+        if (username == null) return;
+        UserAccount user = users.get(username.trim().toLowerCase());
+        loginHistory.add(new LoginAuditEntry(
+                username.trim(),
+                user != null ? user.getName() : username,
+                user != null ? user.getRole() : "USER",
+                ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
+                "SUCCESS (Logged Out)"
+        ));
     }
 
     public void updateLastVisited(String username, String path) {

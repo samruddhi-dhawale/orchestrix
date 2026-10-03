@@ -8,12 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pipeline.pipelineorchestrator.model.UserAccount;
+import com.pipeline.pipelineorchestrator.service.JwtService;
+import com.pipeline.pipelineorchestrator.service.LoginRateLimiter;
 import com.pipeline.pipelineorchestrator.service.UserService;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
@@ -21,25 +25,59 @@ import jakarta.servlet.http.HttpServletRequest;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtService jwtService;
+    private final LoginRateLimiter loginRateLimiter;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, JwtService jwtService, LoginRateLimiter loginRateLimiter) {
         this.userService = userService;
+        this.jwtService = jwtService;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials, HttpServletRequest request) {
+    public ResponseEntity<?> login(@RequestBody(required = false) Map<String, String> credentials, HttpServletRequest request) {
+        if (credentials == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", 400,
+                    "message", "Username and password are required."
+            ));
+        }
+
         String username = credentials.getOrDefault("username", "").trim();
         String password = credentials.getOrDefault("password", "").trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Username and password are required"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", 400,
+                    "message", "Username and password are required."
+            ));
         }
 
-        String ip = request.getRemoteAddr();
-        UserAccount user = userService.authenticate(username, password, ip);
+        String clientIp = getClientIp(request);
+
+        // Check brute-force lockout
+        if (loginRateLimiter.isRateLimited(clientIp)) {
+            long remainingSec = loginRateLimiter.getRemainingLockoutSeconds(clientIp);
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(
+                    "status", 429,
+                    "message", "Too many failed login attempts. Please wait " + (remainingSec > 0 ? remainingSec + "s" : "a few minutes") + " before trying again."
+            ));
+        }
+
+        UserAccount user = userService.authenticate(username, password, clientIp);
 
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid username or password"));
+            // Check if this latest attempt triggered rate limiting
+            if (loginRateLimiter.isRateLimited(clientIp)) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(
+                        "status", 429,
+                        "message", "Too many failed login attempts. Please wait a few minutes before trying again."
+                ));
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "status", 401,
+                    "message", "Invalid username or password."
+            ));
         }
 
         boolean isAdmin = "ADMIN".equalsIgnoreCase(user.getRole());
@@ -47,8 +85,11 @@ public class AuthController {
                 ? List.of("LAUNCH_ALL", "DEPLOY_PRODUCTION", "MANAGE_CLOUD", "VIEW_LOGS", "SYSTEM_SETTINGS", "VIEW_AUDIT")
                 : List.of("LAUNCH_DEV_STAGING", "VIEW_LOGS", "VIEW_ARTIFACTS");
 
+        String token = jwtService.generateToken(user.getUsername(), user.getRole(), user.getName());
+
         return ResponseEntity.ok(Map.of(
-                "token", "orchestrix-jwt-" + (isAdmin ? "admin" : "dev") + "-" + System.currentTimeMillis(),
+                "authenticated", true,
+                "token", token,
                 "username", user.getUsername(),
                 "role", user.getRole(),
                 "name", user.getName(),
@@ -60,25 +101,30 @@ public class AuthController {
         ));
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> payload) {
-        String username = payload.getOrDefault("username", "").trim();
-        String password = payload.getOrDefault("password", "").trim();
-        String name = payload.getOrDefault("name", "").trim();
-        String email = payload.getOrDefault("email", "").trim();
-        String role = payload.getOrDefault("role", "DEVELOPER").trim();
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
 
-        try {
-            UserAccount newUser = userService.register(username, password, name, email, role);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "Account successfully registered",
-                    "username", newUser.getUsername(),
-                    "name", newUser.getName(),
-                    "role", newUser.getRole()
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        String token = extractBearerToken(authHeader);
+        String username = null;
+
+        if (token != null) {
+            Claims claims = jwtService.validateAndExtractClaims(token);
+            if (claims != null) {
+                username = claims.getSubject();
+            }
+            jwtService.invalidateToken(token);
         }
+
+        if (username != null) {
+            userService.recordLogout(username, getClientIp(request));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "message", "Logged out successfully"
+        ));
     }
 
     @PostMapping("/save-state")
@@ -92,5 +138,20 @@ public class AuthController {
     @GetMapping("/users")
     public ResponseEntity<List<UserAccount>> listUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    private String extractBearerToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7).trim();
+        }
+        return null;
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xf = request.getHeader("X-Forwarded-For");
+        if (xf != null && !xf.isBlank()) {
+            return xf.split(",")[0].trim();
+        }
+        return request.getRemoteAddr() != null ? request.getRemoteAddr() : "127.0.0.1";
     }
 }
