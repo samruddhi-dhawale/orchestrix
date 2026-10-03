@@ -269,15 +269,15 @@ function LaunchPipeline() {
         <div className="form-card-title">
           <div className="title-left">
             <h2>Pipeline Parameters</h2>
-            <p>Complete configuration in sequence. Pre-execution validation verifies all fields before launch.</p>
+            <p>Select options in sequence to configure your deployment pipeline.</p>
           </div>
           <span className="step-count-badge">
-            {completedStepsCount === 5 ? "Configuration Ready" : `Step ${completedStepsCount + 1} of 5`}
+            {environment && strategy ? "Review Ready" : `Step ${[component, subcomponent, effectiveBranch, environment].filter(Boolean).length + 1} of 5`}
           </span>
         </div>
 
         <form onSubmit={handleLaunchPipeline} className="progressive-fields-stack">
-          {/* STEP 1: Application Component Dropdown */}
+          {/* STEP 1: Application Component Dropdown (Always visible) */}
           <div className="progressive-field-group">
             <div className="field-meta">
               <span className={`step-tag ${component ? "completed" : ""}`}>
@@ -306,163 +306,159 @@ function LaunchPipeline() {
             <span className="field-hint">Defines the root service repository to orchestrate.</span>
           </div>
 
-          {/* STEP 2: Target Subcomponent Dropdown (Enabled once Component is selected) */}
-          <div className="progressive-field-group">
-            <div className="field-meta">
-              <span className={`step-tag ${subcomponent ? "completed" : !component ? "disabled" : ""}`}>
-                {subcomponent ? "✓ Step 2" : "Step 2"}
-              </span>
-              <label htmlFor="subcomponent-select" style={{ opacity: component ? 1 : 0.65 }}>
-                Target Subcomponent <span>*</span>
-              </label>
-            </div>
+          {/* STEP 2: Target Subcomponent Dropdown (Appears ONLY after Component is selected) */}
+          {component && (
+            <div className="progressive-field-group dynamic-fade-in">
+              <div className="field-meta">
+                <span className={`step-tag ${subcomponent ? "completed" : ""}`}>
+                  {subcomponent ? "✓ Step 2" : "Step 2"}
+                </span>
+                <label htmlFor="subcomponent-select">
+                  Target Subcomponent <span>*</span>
+                </label>
+              </div>
 
-            {loadingSubcomponents ? (
-              <div className="field-loading-state">Loading subcomponents for {compLabel}...</div>
-            ) : (
+              {loadingSubcomponents ? (
+                <div className="field-loading-state">Loading subcomponents for {compLabel}...</div>
+              ) : (
+                <select
+                  id="subcomponent-select"
+                  value={subcomponent}
+                  onChange={handleSubcomponentChange}
+                  className="progressive-select"
+                  required
+                >
+                  <option value="">-- Select Subcomponent --</option>
+                  {subcomponents.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {fieldErrors.subcomponent && <span className="field-error-text">{fieldErrors.subcomponent}</span>}
+              <span className="field-hint">Dynamic module belonging to {compLabel}.</span>
+            </div>
+          )}
+
+          {/* STEP 3: Git Branch / Tag Dropdown (Appears ONLY after Subcomponent is selected) */}
+          {subcomponent && (
+            <div className="progressive-field-group dynamic-fade-in">
+              <div className="field-meta">
+                <span className={`step-tag ${effectiveBranch ? "completed" : ""}`}>
+                  {effectiveBranch ? "✓ Step 3" : "Step 3"}
+                </span>
+                <label htmlFor="branch-select">
+                  Git Branch / Tag <span>*</span>
+                </label>
+              </div>
+
               <select
-                id="subcomponent-select"
-                value={subcomponent}
-                onChange={handleSubcomponentChange}
+                id="branch-select"
+                value={branch}
+                onChange={handleBranchChange}
                 className="progressive-select"
-                disabled={!component}
                 required
               >
-                <option value="">
-                  {component ? "-- Select Subcomponent --" : "-- Select Component in Step 1 First --"}
-                </option>
-                {subcomponents.map((sub) => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.name}
-                  </option>
-                ))}
+                <option value="">-- Select Git Branch --</option>
+                <option value="main">main (Production Stable Branch)</option>
+                <option value="develop">develop (Active Integration Branch)</option>
+                <option value="feature/login">feature/login (Feature Branch)</option>
+                <option value="release/v1.0">release/v1.0 (Release Candidate)</option>
+                <option value="feature/broken-test">feature/broken-test (Simulate Test Failure Demo)</option>
+                <option value="custom">Custom Branch / Tag Name...</option>
               </select>
-            )}
-            {fieldErrors.subcomponent && <span className="field-error-text">{fieldErrors.subcomponent}</span>}
-            <span className="field-hint">
-              {component ? `Dynamic module belonging to ${compLabel}.` : "Requires Step 1 selection."}
-            </span>
-          </div>
 
-          {/* STEP 3: Git Branch / Tag Dropdown (Enabled once Subcomponent is selected) */}
-          <div className="progressive-field-group">
-            <div className="field-meta">
-              <span className={`step-tag ${effectiveBranch ? "completed" : !subcomponent ? "disabled" : ""}`}>
-                {effectiveBranch ? "✓ Step 3" : "Step 3"}
-              </span>
-              <label htmlFor="branch-select" style={{ opacity: subcomponent ? 1 : 0.65 }}>
-                Git Branch / Tag <span>*</span>
-              </label>
+              {branch === "custom" && (
+                <div className="custom-branch-input-wrapper dynamic-fade-in" style={{ marginTop: 10 }}>
+                  <input
+                    type="text"
+                    placeholder="Enter custom branch name (e.g. bugfix/auth-token)"
+                    value={customBranch}
+                    onChange={(e) => {
+                      setCustomBranch(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, branch: "" }));
+                    }}
+                    className="progressive-input"
+                    required
+                  />
+                </div>
+              )}
+              {fieldErrors.branch && <span className="field-error-text">{fieldErrors.branch}</span>}
+              <span className="field-hint">The source revision to checkout, compile, test, scan, and deploy.</span>
             </div>
+          )}
 
-            <select
-              id="branch-select"
-              value={branch}
-              onChange={handleBranchChange}
-              className="progressive-select"
-              disabled={!subcomponent}
-              required
-            >
-              <option value="">
-                {subcomponent ? "-- Select Git Branch --" : "-- Select Subcomponent in Step 2 First --"}
-              </option>
-              <option value="main">main (Production Stable Branch)</option>
-              <option value="develop">develop (Active Integration Branch)</option>
-              <option value="feature/login">feature/login (Feature Branch)</option>
-              <option value="release/v1.0">release/v1.0 (Release Candidate)</option>
-              <option value="feature/broken-test">feature/broken-test (Simulate Test Failure Demo)</option>
-              <option value="custom">Custom Branch / Tag Name...</option>
-            </select>
-
-            {branch === "custom" && (
-              <div className="custom-branch-input-wrapper dynamic-fade-in" style={{ marginTop: 10 }}>
-                <input
-                  type="text"
-                  placeholder="Enter custom branch name (e.g. bugfix/auth-token)"
-                  value={customBranch}
-                  onChange={(e) => {
-                    setCustomBranch(e.target.value);
-                    setFieldErrors((prev) => ({ ...prev, branch: "" }));
-                  }}
-                  className="progressive-input"
-                  required
-                />
+          {/* STEP 4: Target Deployment Environment (Appears ONLY after Branch is selected) */}
+          {subcomponent && effectiveBranch && (
+            <div className="progressive-field-group dynamic-fade-in">
+              <div className="field-meta">
+                <span className={`step-tag ${environment ? "completed" : ""}`}>
+                  {environment ? "✓ Step 4" : "Step 4"}
+                </span>
+                <label htmlFor="environment-select">
+                  Target Deployment Environment <span>*</span>
+                </label>
               </div>
-            )}
-            {fieldErrors.branch && <span className="field-error-text">{fieldErrors.branch}</span>}
-            <span className="field-hint">The source revision to checkout, compile, test, scan, and deploy.</span>
-          </div>
 
-          {/* STEP 4: Target Deployment Environment (Enabled once Branch is selected) */}
-          <div className="progressive-field-group">
-            <div className="field-meta">
-              <span className={`step-tag ${environment ? "completed" : !effectiveBranch ? "disabled" : ""}`}>
-                {environment ? "✓ Step 4" : "Step 4"}
-              </span>
-              <label htmlFor="environment-select" style={{ opacity: effectiveBranch ? 1 : 0.65 }}>
-                Target Deployment Environment <span>*</span>
-              </label>
+              <select
+                id="environment-select"
+                value={environment}
+                onChange={handleEnvironmentChange}
+                className="progressive-select"
+                required
+              >
+                <option value="">-- Select Deployment Environment --</option>
+                <option value="development">Development (Azure App Service - East US)</option>
+                <option value="staging">Testing / Staging (Azure App Service - East US Staging Slot)</option>
+                <option value="production">Production (Azure App Service - High Availability Pair)</option>
+              </select>
+              {fieldErrors.environment && <span className="field-error-text">{fieldErrors.environment}</span>}
+              <span className="field-hint">Determines Azure resource group and cloud deployment target.</span>
+
+              {/* RBAC Notice for Production */}
+              {environment === "production" && (
+                <div className="rbac-notice-banner dynamic-fade-in">
+                  {isAdmin ? (
+                    <span>👑 <strong>Admin Authorized:</strong> You have full administrator credentials to execute production deployments directly.</span>
+                  ) : (
+                    <span>🛡️ <strong>Production Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Production deployment will pause after build, test, scan, package, and JFrog publish for Administrator approval before deploying to Azure.</span>
+                  )}
+                </div>
+              )}
             </div>
+          )}
 
-            <select
-              id="environment-select"
-              value={environment}
-              onChange={handleEnvironmentChange}
-              className="progressive-select"
-              disabled={!effectiveBranch}
-              required
-            >
-              <option value="">
-                {effectiveBranch ? "-- Select Deployment Environment --" : "-- Select Branch in Step 3 First --"}
-              </option>
-              <option value="development">Development (Azure App Service - East US)</option>
-              <option value="staging">Testing / Staging (Azure App Service - East US Staging Slot)</option>
-              <option value="production">Production (Azure App Service - High Availability Pair)</option>
-            </select>
-            {fieldErrors.environment && <span className="field-error-text">{fieldErrors.environment}</span>}
-            <span className="field-hint">Determines Azure resource group and cloud deployment target.</span>
-
-            {/* RBAC Notice for Production */}
-            {environment === "production" && (
-              <div className="rbac-notice-banner dynamic-fade-in">
-                {isAdmin ? (
-                  <span>👑 <strong>Admin Authorized:</strong> You have full administrator credentials to execute production deployments directly.</span>
-                ) : (
-                  <span>🛡️ <strong>Production Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Production deployment will pause after build, test, scan, package, and JFrog publish for Administrator approval before deploying to Azure.</span>
-                )}
+          {/* STEP 5: Azure Deployment Strategy (Appears ONLY after Environment is selected) */}
+          {subcomponent && effectiveBranch && environment && (
+            <div className="progressive-field-group dynamic-fade-in">
+              <div className="field-meta">
+                <span className={`step-tag ${strategy ? "completed" : ""}`}>
+                  {strategy ? "✓ Step 5" : "Step 5"}
+                </span>
+                <label htmlFor="strategy-select">
+                  Azure Deployment Strategy <span>*</span>
+                </label>
               </div>
-            )}
-          </div>
 
-          {/* STEP 5: Azure Deployment Strategy (Enabled once Environment is selected) */}
-          <div className="progressive-field-group">
-            <div className="field-meta">
-              <span className={`step-tag ${environment && strategy ? "completed" : !environment ? "disabled" : ""}`}>
-                {environment && strategy ? "✓ Step 5" : "Step 5"}
-              </span>
-              <label htmlFor="strategy-select" style={{ opacity: environment ? 1 : 0.65 }}>
-                Azure Deployment Strategy <span>*</span>
-              </label>
+              <select
+                id="strategy-select"
+                value={strategy}
+                onChange={(e) => {
+                  setStrategy(e.target.value);
+                  setFieldErrors((prev) => ({ ...prev, strategy: "" }));
+                }}
+                className="progressive-select"
+                required
+              >
+                <option value="BLUE_GREEN">Blue/Green Deployment (Zero-Downtime Azure Slot Swap - Recommended)</option>
+                <option value="CANARY">Canary Release (10% Traffic Ramp → 50% → 100%)</option>
+                <option value="ROLLING">Rolling Update (Incremental Node Rotation)</option>
+              </select>
+              {fieldErrors.strategy && <span className="field-error-text">{fieldErrors.strategy}</span>}
+              <span className="field-hint">Zero-downtime routing policy applied during Azure cloud provisioning.</span>
             </div>
-
-            <select
-              id="strategy-select"
-              value={strategy}
-              onChange={(e) => {
-                setStrategy(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, strategy: "" }));
-              }}
-              className="progressive-select"
-              disabled={!environment}
-              required
-            >
-              <option value="BLUE_GREEN">Blue/Green Deployment (Zero-Downtime Azure Slot Swap - Recommended)</option>
-              <option value="CANARY">Canary Release (10% Traffic Ramp → 50% → 100%)</option>
-              <option value="ROLLING">Rolling Update (Incremental Node Rotation)</option>
-            </select>
-            {fieldErrors.strategy && <span className="field-error-text">{fieldErrors.strategy}</span>}
-            <span className="field-hint">Zero-downtime routing policy applied during Azure cloud provisioning.</span>
-          </div>
+          )}
 
           {/* Configuration Review Summary & Confirmation */}
           {component && subcomponent && effectiveBranch && environment && strategy && (
