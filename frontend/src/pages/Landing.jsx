@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Landing.css";
 
-const STEPS = ["Validate Configuration", "Checkout Source", "Build", "Test", "Package", "Publish Artifact"];
+const STEPS = ["Checkout Source", "Build", "Test", "Security Scan", "Package", "Publish Artifact", "Azure Cloud Deployment"];
 const FEATURES = [
-  ["Step-by-step results", "Every run reports each of the six steps with its status and message."],
+  ["Step-by-step results", "Every run reports each of the pipeline steps with its status, logs, and execution duration."],
   ["Clear failures", "When a step fails you see which one and why. The remaining steps stay unrun."],
   ["One dashboard", "Totals, active runs and the latest results for every component in one place."],
   ["Ready to extend", "Steps and artifact publishing are pluggable, so real tooling can replace the demo steps."],
@@ -12,7 +12,7 @@ const FEATURES = [
 const FLOW = [
   ["Choose", "Pick a component and subcomponent."],
   ["Configure", "Set the branch and the target environment."],
-  ["Run", "One click starts all six pipeline steps."],
+  ["Run", "One click starts automated pipeline stages."],
   ["Review", "See results on the dashboard and the executions list."],
 ];
 

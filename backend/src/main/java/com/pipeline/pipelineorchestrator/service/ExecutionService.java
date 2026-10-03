@@ -1,6 +1,7 @@
 package com.pipeline.pipelineorchestrator.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,7 +31,6 @@ import com.pipeline.pipelineorchestrator.steps.PackageStep;
 import com.pipeline.pipelineorchestrator.steps.PublishArtifactStep;
 import com.pipeline.pipelineorchestrator.steps.SecurityScanStep;
 import com.pipeline.pipelineorchestrator.steps.TestStep;
-import com.pipeline.pipelineorchestrator.steps.ValidationStep;
 
 import jakarta.annotation.PostConstruct;
 
@@ -50,7 +50,7 @@ public class ExecutionService {
 
     @PostConstruct
     public void initSampleExecutions() {
-        // Starts completely clean with 0 executions. Only increases when the user launches a pipeline!
+        // Starts clean with 0 executions. Only increments when the user launches a pipeline!
     }
 
     public PipelineExecution executePipeline(PipelineRequest request) {
@@ -62,15 +62,39 @@ public class ExecutionService {
         execution.setStartedAt(LocalDateTime.now());
         execution.addLog("INFO", "Init", "Pipeline request accepted. Strategy: " + request.getDeploymentStrategy() + " | Triggered by: " + request.getInitiatedBy());
 
-        executions.put(execution.getExecutionId(), execution);
-
-        // 8-stage DevSecOps pipeline
         boolean isProduction = "production".equalsIgnoreCase(request.getEnvironment());
         boolean isAdmin = "ADMIN".equalsIgnoreCase(request.getInitiatedRole());
         boolean needsApproval = isProduction && !isAdmin;
 
+        int totalStages = needsApproval ? 8 : 7;
+        List<String> stageNames = needsApproval
+                ? List.of(
+                        "Checkout Source",
+                        "Build",
+                        "Test",
+                        "Security & Vulnerability Scan",
+                        "Package",
+                        "Publish Artifact",
+                        "Production Approval",
+                        "Azure Cloud Deployment"
+                )
+                : List.of(
+                        "Checkout Source",
+                        "Build",
+                        "Test",
+                        "Security & Vulnerability Scan",
+                        "Package",
+                        "Publish Artifact",
+                        "Azure Cloud Deployment"
+                );
+
+        execution.setTotalStages(totalStages);
+        execution.setStageNames(stageNames);
+
+        executions.put(execution.getExecutionId(), execution);
+
+        // Core automated steps (Beginning directly at Checkout Source)
         List<PipelineStep> preApprovalSteps = List.of(
-                new ValidationStep(),
                 new CheckoutSourceStep(),
                 new BuildStep(),
                 new TestStep(),
@@ -82,21 +106,32 @@ public class ExecutionService {
         CompletableFuture.runAsync(() -> {
             try {
                 if (needsApproval) {
-                    // Run steps 1 to 7 first
-                    pipelineOrchestrator.execute(execution, preApprovalSteps);
+                    // Run steps 1 to 6 first with totalStages = 8
+                    pipelineOrchestrator.execute(execution, preApprovalSteps, totalStages);
 
-                    if (execution.getStatus() == ExecutionStatus.SUCCESS) {
-                        // Pause before Azure deployment step
+                    if (execution.getStatus() != ExecutionStatus.FAILED) {
+                        // Pause for Administrator approval before Azure Cloud Deployment
+                        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+                        PipelineStepResult approvalStep = new PipelineStepResult(
+                                "Production Approval",
+                                ExecutionStatus.WAITING_FOR_APPROVAL,
+                                "Production release on hold. Awaiting Administrator authorization before Stage 8: Azure Cloud Deployment.",
+                                0,
+                                nowStr,
+                                null
+                        );
+                        execution.getSteps().add(approvalStep);
                         execution.setStatus(ExecutionStatus.WAITING_FOR_APPROVAL);
-                        execution.setCurrentStepName("Awaiting Administrator Approval");
-                        execution.setProgressPercentage(88);
-                        execution.addLog("WARN", "Approval Gate", "⏸️ Production release paused. Awaiting Administrator sign-off before Azure Cloud Deployment.");
+                        execution.setCurrentStepIndex(6);
+                        execution.setCurrentStepName("Production Approval");
+                        execution.setProgressPercentage((int) Math.round((6.0 / totalStages) * 100)); // 75%
+                        execution.addLog("WARN", "Production Approval", "⏸️ Production release paused at Stage 7: Production Approval. Awaiting Administrator sign-off before Stage 8: Azure Cloud Deployment.");
                     }
                 } else {
-                    // Run all 8 steps including Azure deployment
+                    // Run all 7 steps including Azure deployment with totalStages = 7
                     List<PipelineStep> allSteps = new ArrayList<>(preApprovalSteps);
                     allSteps.add(new AzureDeploymentStep());
-                    pipelineOrchestrator.execute(execution, allSteps);
+                    pipelineOrchestrator.execute(execution, allSteps, totalStages);
                 }
             } catch (Exception e) {
                 execution.setStatus(ExecutionStatus.FAILED);
@@ -114,16 +149,29 @@ public class ExecutionService {
             return execution;
         }
 
-        execution.addLog("SUCCESS", "Approval Gate", "👑 Administrator [" + adminUser + "] approved production release. Resuming Stage 8: Azure Cloud Deployment...");
+        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        for (PipelineStepResult step : execution.getSteps()) {
+            if ("Production Approval".equals(step.getStepName())) {
+                step.setStatus(ExecutionStatus.SUCCESS);
+                step.setMessage("Approved by Administrator [" + adminUser + "]. Authorizing Azure Cloud Deployment.");
+                step.setCompletedAt(nowStr);
+                break;
+            }
+        }
+
+        execution.addLog("SUCCESS", "Production Approval", "👑 Administrator [" + adminUser + "] approved production release. Resuming Stage 8: Azure Cloud Deployment...");
         execution.setStatus(ExecutionStatus.RUNNING);
+        execution.setCurrentStepIndex(7);
+        execution.setCurrentStepName("Azure Cloud Deployment");
+        execution.setProgressPercentage((int) Math.round((7.0 / 8.0) * 100)); // 88%
 
         CompletableFuture.runAsync(() -> {
             try {
                 List<PipelineStep> deployStepList = List.of(new AzureDeploymentStep());
-                pipelineOrchestrator.execute(execution, deployStepList);
+                pipelineOrchestrator.execute(execution, deployStepList, 8);
             } catch (Exception e) {
                 execution.setStatus(ExecutionStatus.FAILED);
-                execution.addLog("ERROR", "Approval Gate", "Deployment failed post-approval: " + e.getMessage());
+                execution.addLog("ERROR", "Azure Cloud Deployment", "Deployment failed post-approval: " + e.getMessage());
             }
         }, executorService);
 
@@ -136,9 +184,21 @@ public class ExecutionService {
             return execution;
         }
 
+        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        for (PipelineStepResult step : execution.getSteps()) {
+            if ("Production Approval".equals(step.getStepName())) {
+                step.setStatus(ExecutionStatus.REJECTED);
+                step.setMessage("Rejected by Administrator [" + adminUser + "]. Reason: " + (reason != null ? reason : "Canceled by policy"));
+                step.setCompletedAt(nowStr);
+                break;
+            }
+        }
+
         execution.setStatus(ExecutionStatus.REJECTED);
         execution.setCompletedAt(LocalDateTime.now());
-        execution.addLog("ERROR", "Approval Gate", "❌ Production release was REJECTED by Administrator [" + adminUser + "]. Reason: " + (reason != null ? reason : "Canceled by policy"));
+        long totalMs = java.time.Duration.between(execution.getStartedAt(), execution.getCompletedAt()).toMillis();
+        execution.setTotalDurationMs(totalMs);
+        execution.addLog("ERROR", "Production Approval", "❌ Production release was REJECTED by Administrator [" + adminUser + "]. Reason: " + (reason != null ? reason : "Canceled by policy"));
         return execution;
     }
 
@@ -173,12 +233,21 @@ public class ExecutionService {
         exec.setStartedAt(start);
         exec.setCompletedAt(start.plusNanos(durationMs * 1_000_000));
         exec.setTotalDurationMs(durationMs);
+        exec.setTotalStages(7);
+        exec.setStageNames(List.of(
+                "Checkout Source",
+                "Build",
+                "Test",
+                "Security & Vulnerability Scan",
+                "Package",
+                "Publish Artifact",
+                "Azure Cloud Deployment"
+        ));
         exec.setProgressPercentage(status == ExecutionStatus.SUCCESS ? 100 : 50);
-        exec.setCurrentStepIndex(status == ExecutionStatus.SUCCESS ? 8 : 4);
+        exec.setCurrentStepIndex(status == ExecutionStatus.SUCCESS ? 7 : 3);
         exec.setCurrentStepName(status == ExecutionStatus.SUCCESS ? "Completed" : "Test");
 
         List<PipelineStepResult> stepResults = new ArrayList<>();
-        stepResults.add(new PipelineStepResult("Validate Configuration", ExecutionStatus.SUCCESS, "Pipeline configuration validated successfully", 120, "10:00:00", "10:00:00"));
         stepResults.add(new PipelineStepResult("Checkout Source", ExecutionStatus.SUCCESS, "Source checkout completed for branch '" + branch + "'", 1040, "10:00:01", "10:00:02"));
         stepResults.add(new PipelineStepResult("Build", ExecutionStatus.SUCCESS, "Maven compilation completed successfully", 1450, "10:00:02", "10:00:04"));
 
@@ -197,7 +266,7 @@ public class ExecutionService {
                     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
                     "libs-release-local",
                     "https://jfrog.orchestrix.io/artifactory/libs-release-local/com/orchestrix/" + sub + "/1.0.0/",
-                    start.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             ));
 
             exec.setDeployment(new AzureDeploymentInfo(
@@ -210,7 +279,7 @@ public class ExecutionService {
                     "https://app-orchestrix-" + sub + "-" + env + ".azurewebsites.net",
                     "https://app-orchestrix-" + sub + "-" + env + ".azurewebsites.net/actuator/health",
                     "200 OK - Healthy",
-                    start.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                     strategy,
                     "staging <-> production (Swapped)",
                     "Admin Sign-off"

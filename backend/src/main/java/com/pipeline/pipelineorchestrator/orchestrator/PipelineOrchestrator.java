@@ -17,6 +17,11 @@ public class PipelineOrchestrator {
     }
 
     public PipelineExecution execute(PipelineExecution execution, List<PipelineStep> steps) {
+        int totalExpected = execution.getTotalStages() > 0 ? execution.getTotalStages() : steps.size();
+        return execute(execution, steps, totalExpected);
+    }
+
+    public PipelineExecution execute(PipelineExecution execution, List<PipelineStep> steps, int totalExpectedSteps) {
 
         PipelineContext context = new PipelineContext(
                 execution.getPipelineRequest(),
@@ -30,7 +35,6 @@ public class PipelineOrchestrator {
         List<PipelineStepResult> results = execution.getSteps() != null ? new ArrayList<>(execution.getSteps()) : new ArrayList<>();
         int existingCount = results.size();
         int additionalSteps = steps.size();
-        int totalExpectedSteps = existingCount + additionalSteps;
 
         for (int i = 0; i < additionalSteps; i++) {
             PipelineStep step = steps.get(i);
@@ -57,16 +61,19 @@ public class PipelineOrchestrator {
             }
         }
 
-        execution.setCurrentStepIndex(totalExpectedSteps);
-        execution.setProgressPercentage(100);
-        execution.setCurrentStepName("Completed");
-        execution.setStatus(ExecutionStatus.SUCCESS);
-        execution.setCompletedAt(LocalDateTime.now());
+        // Check if all expected stages for this pipeline are complete
+        if (results.size() >= totalExpectedSteps) {
+            execution.setCurrentStepIndex(totalExpectedSteps);
+            execution.setProgressPercentage(100);
+            execution.setCurrentStepName("Completed");
+            execution.setStatus(ExecutionStatus.SUCCESS);
+            execution.setCompletedAt(LocalDateTime.now());
 
-        long totalMs = java.time.Duration.between(execution.getStartedAt(), execution.getCompletedAt()).toMillis();
-        execution.setTotalDurationMs(totalMs);
+            long totalMs = java.time.Duration.between(execution.getStartedAt(), execution.getCompletedAt()).toMillis();
+            execution.setTotalDurationMs(totalMs);
 
-        execution.addLog("SUCCESS", "Orchestrator", "Pipeline finished successfully in " + String.format("%.2f", totalMs / 1000.0) + "s. All " + totalExpectedSteps + " stages completed.");
+            execution.addLog("SUCCESS", "Orchestrator", "Pipeline finished successfully in " + String.format("%.2f", totalMs / 1000.0) + "s. All " + totalExpectedSteps + " stages completed.");
+        }
 
         return execution;
     }

@@ -161,18 +161,38 @@ function Execution() {
     );
   }
 
-  // 8-stage DevSecOps pipeline stages
-  const pipelineStepNames = [
-    "Validate Configuration",
-    "Checkout Source",
-    "Build",
-    "Test",
-    "Security & Vulnerability Scan",
-    "Package",
-    "Publish Artifact",
-    "Azure Cloud Deployment",
-  ];
+  // Dynamic DevSecOps pipeline stages (Starts at Checkout Source)
+  const isApprovalRequired =
+    (execution.pipelineRequest?.environment === "production" &&
+      execution.pipelineRequest?.initiatedRole !== "ADMIN") ||
+    execution.steps?.some((s) => s.stepName === "Production Approval") ||
+    execution.status === "WAITING_FOR_APPROVAL";
 
+  const pipelineStepNames =
+    execution.stageNames && execution.stageNames.length > 0
+      ? execution.stageNames
+      : isApprovalRequired
+      ? [
+          "Checkout Source",
+          "Build",
+          "Test",
+          "Security & Vulnerability Scan",
+          "Package",
+          "Publish Artifact",
+          "Production Approval",
+          "Azure Cloud Deployment",
+        ]
+      : [
+          "Checkout Source",
+          "Build",
+          "Test",
+          "Security & Vulnerability Scan",
+          "Package",
+          "Publish Artifact",
+          "Azure Cloud Deployment",
+        ];
+
+  const totalStages = execution.totalStages || pipelineStepNames.length;
   const executedSteps = execution.steps || [];
   const status = execution.status || "PENDING";
   const isRunning = status === "RUNNING";
@@ -182,7 +202,9 @@ function Execution() {
   const isRejected = status === "REJECTED";
 
   const successCount = executedSteps.filter((s) => s.status === "SUCCESS").length;
-  const progressPercent = execution.progressPercentage ?? (isSuccess ? 100 : Math.round((successCount / 8) * 100));
+  const progressPercent =
+    execution.progressPercentage ??
+    (isSuccess ? 100 : Math.round((successCount / totalStages) * 100));
 
   // Filtered log lines
   const filteredLogs = (execution.logs || []).filter((l) => {
@@ -237,8 +259,8 @@ function Execution() {
             <div>
               <h3>Production Release Approval Required</h3>
               <p>
-                Stages 1–7 (Build, Test, Security Scan, Package, JFrog Publish) completed successfully.
-                Azure Cloud Deployment is on hold awaiting Administrator authorization.
+                Stages 1–6 (Checkout Source, Build, Test, Security Scan, Package, JFrog Publish) completed successfully.
+                Stage 7 (Production Approval) requires Administrator authorization before Stage 8 (Azure Cloud Deployment).
               </p>
               <div className="approval-meta-row">
                 <span>Target: <strong>Microsoft Azure ({execution.pipelineRequest?.environment})</strong></span>
@@ -333,11 +355,11 @@ function Execution() {
             </div>
             <span className="progress-subtext">
               {isSuccess
-                ? "All 8 DevSecOps stages passed"
+                ? `All ${totalStages} DevSecOps stages passed`
                 : isWaitingApproval
-                ? "Stage 8 awaiting Admin sign-off"
+                ? `Stage 7: Production Approval awaiting Admin sign-off`
                 : isRunning
-                ? `Running stage ${Math.min(successCount + 1, 8)} of 8`
+                ? `Running stage ${Math.min(successCount + 1, totalStages)} of ${totalStages}`
                 : isFailed
                 ? "Execution halted at step " + executedSteps.length
                 : isRejected
@@ -352,12 +374,12 @@ function Execution() {
       <div className="execution-summary-grid">
         <div className="summary-stat-box">
           <span className="summary-label">Total Stages</span>
-          <strong>8 Stages</strong>
+          <strong>{totalStages} Stages</strong>
         </div>
 
         <div className="summary-stat-box ok">
           <span className="summary-label">Completed</span>
-          <strong>{successCount} / 8</strong>
+          <strong>{successCount} / {totalStages}</strong>
         </div>
 
         <div className="summary-stat-box">
@@ -382,7 +404,7 @@ function Execution() {
           onClick={() => setActiveTab("stages")}
         >
           <Layers size={16} />
-          <span>Pipeline Flow (8 Stages)</span>
+          <span>Pipeline Flow ({totalStages} Stages)</span>
         </button>
 
         <button
@@ -410,28 +432,30 @@ function Execution() {
         </button>
       </div>
 
-      {/* TAB 1: 8-Stage Pipeline Flow */}
+      {/* TAB 1: Pipeline Flow */}
       {activeTab === "stages" && (
         <div className="stages-flow-container">
           <div className="stages-card">
             <div className="card-head-clean">
               <h2>Automated DevSecOps Pipeline Stages</h2>
-              <span className="step-count-pill">{executedSteps.length} of 8 finished</span>
+              <span className="step-count-pill">{executedSteps.length} of {totalStages} finished</span>
             </div>
 
             <div className="timeline-stages-list">
               {pipelineStepNames.map((stepName, index) => {
                 const executed = executedSteps.find((s) => s.stepName === stepName);
+                const isStepApproval = stepName === "Production Approval";
                 const isCurrentlyRunning =
                   isRunning && executedSteps.length === index;
                 const isStepSuccess = executed?.status === "SUCCESS";
                 const isStepFailed = executed?.status === "FAILED";
-                const isStepPaused = isWaitingApproval && index === 7;
+                const isStepRejected = executed?.status === "REJECTED";
+                const isStepPaused = (isStepApproval && isWaitingApproval) || executed?.status === "WAITING_FOR_APPROVAL";
                 const isPending = !executed && !isCurrentlyRunning && !isStepPaused;
 
                 let stepStateClass = "pending";
                 if (isStepSuccess) stepStateClass = "success";
-                if (isStepFailed) stepStateClass = "failed";
+                if (isStepFailed || isStepRejected) stepStateClass = "failed";
                 if (isCurrentlyRunning) stepStateClass = "running";
                 if (isStepPaused) stepStateClass = "waiting";
 
@@ -440,7 +464,7 @@ function Execution() {
                     <div className="stage-left-rail">
                       <div className="stage-icon-circle">
                         {isStepSuccess && <CheckCircle2 size={16} />}
-                        {isStepFailed && <AlertCircle size={16} />}
+                        {(isStepFailed || isStepRejected) && <AlertCircle size={16} />}
                         {isCurrentlyRunning && <span className="stage-spinner"></span>}
                         {isStepPaused && <Clock size={16} />}
                         {isPending && <span className="pending-dot-num">{index + 1}</span>}
@@ -462,6 +486,11 @@ function Execution() {
                           {stepName.includes("Security") && (
                             <span className="security-tag">DevSecOps Gate</span>
                           )}
+                          {isStepApproval && (
+                            <span className="security-tag" style={{ background: "#fef3c7", color: "#b45309", borderColor: "#fde68a" }}>
+                              Gatekeeper
+                            </span>
+                          )}
                         </div>
 
                         <div className="stage-meta-right">
@@ -474,6 +503,7 @@ function Execution() {
                           <span className={`stage-status-badge ${stepStateClass}`}>
                             {isStepSuccess && "Completed"}
                             {isStepFailed && "Failed"}
+                            {isStepRejected && "Rejected"}
                             {isCurrentlyRunning && "In Progress..."}
                             {isStepPaused && "Awaiting Approval"}
                             {isPending && "Pending"}
@@ -484,7 +514,7 @@ function Execution() {
                       <p className="stage-description">
                         {executed?.message ||
                           (isStepPaused
-                            ? "Waiting for Administrator authorization before initiating Azure App Service deployment."
+                            ? "Waiting for Administrator authorization before initiating Stage 8: Azure Cloud Deployment."
                             : isCurrentlyRunning
                             ? "Executing orchestration commands..."
                             : "Waiting for preceding stage completion.")}
@@ -722,8 +752,8 @@ function Execution() {
               <h3>Azure Deployment In Progress</h3>
               <p>
                 {isWaitingApproval
-                  ? "Deployment paused at the Production Approval Gate. Administrator sign-off required."
-                  : "Cloud deployment executes in Stage 8 after JFrog artifact publishing."}
+                  ? "Deployment paused at Stage 7 (Production Approval Gate). Administrator sign-off required."
+                  : `Cloud deployment executes in Stage ${totalStages} after JFrog artifact publishing.`}
               </p>
             </div>
           )}

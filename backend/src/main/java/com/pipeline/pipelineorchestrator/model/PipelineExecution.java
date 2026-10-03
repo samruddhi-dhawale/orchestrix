@@ -23,6 +23,8 @@ public class PipelineExecution {
     private List<ExecutionLogLine> logs;
     private ArtifactInfo artifact;
     private AzureDeploymentInfo deployment;
+    private int totalStages;
+    private List<String> stageNames = new ArrayList<>();
 
     public PipelineExecution() {
         this.steps = new ArrayList<>();
@@ -147,5 +149,21 @@ public class PipelineExecution {
 
     public void setDeployment(AzureDeploymentInfo deployment) {
         this.deployment = deployment;
+    }
+
+    public int getTotalStages() {
+        return totalStages;
+    }
+
+    public void setTotalStages(int totalStages) {
+        this.totalStages = totalStages;
+    }
+
+    public List<String> getStageNames() {
+        return stageNames;
+    }
+
+    public void setStageNames(List<String> stageNames) {
+        this.stageNames = stageNames;
     }
 }

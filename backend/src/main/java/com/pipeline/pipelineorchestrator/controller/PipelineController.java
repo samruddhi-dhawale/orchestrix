@@ -18,18 +18,31 @@ import com.pipeline.pipelineorchestrator.model.PipelineExecution;
 import com.pipeline.pipelineorchestrator.model.PipelineRequest;
 import com.pipeline.pipelineorchestrator.service.ExecutionService;
 
+import com.pipeline.pipelineorchestrator.validator.PipelineRequestValidator;
+
 @RestController
 @RequestMapping("/api/pipelines")
 public class PipelineController {
 
     private final ExecutionService executionService;
+    private final PipelineRequestValidator validator;
 
-    public PipelineController(ExecutionService executionService) {
+    public PipelineController(ExecutionService executionService, PipelineRequestValidator validator) {
         this.executionService = executionService;
+        this.validator = validator;
     }
 
     @PostMapping
-    public ResponseEntity<PipelineExecution> createPipeline(@RequestBody PipelineRequest request) {
+    public ResponseEntity<?> createPipeline(@RequestBody PipelineRequest request) {
+        try {
+            validator.validate(request);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", 400,
+                    "error", "Bad Request",
+                    "message", e.getMessage()
+            ));
+        }
         PipelineExecution execution = executionService.executePipeline(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(execution);
     }

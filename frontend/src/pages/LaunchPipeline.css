@@ -103,6 +103,17 @@
   margin-left: 2px;
 }
 
+.step-tag.completed {
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 700;
+}
+
+.step-tag.disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
 /* Select Dropdown Styling */
 .progressive-select,
 .progressive-input {
@@ -121,6 +132,14 @@
   cursor: pointer;
 }
 
+.progressive-select:disabled,
+.progressive-input:disabled {
+  background: #f8fafc !important;
+  color: #94a3b8 !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed !important;
+}
+
 .progressive-select:focus,
 .progressive-input:focus {
   border-color: #2563eb !important;
@@ -129,6 +148,14 @@
 
 .progressive-input {
   cursor: text;
+}
+
+.field-error-text {
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 5px;
 }
 
 .field-hint {
