@@ -1239,11 +1239,14 @@ textarea:focus {
 
 .login-wrapper {
   min-height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f1f5f9;
-  padding: 24px;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .login-box-card {
@@ -1254,6 +1257,8 @@ textarea:focus {
   border-radius: 14px;
   padding: 36px 32px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  margin: auto;
 }
 
 .login-title-section {
@@ -1294,73 +1299,50 @@ textarea:focus {
   line-height: 1.4;
 }
 
-/* Role Switch Tabs */
-.role-switch-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  background: #f1f5f9;
-  padding: 4px;
-  border-radius: 8px;
-  margin-bottom: 14px;
-}
-
-.role-tab-btn {
+/* Responsive Error Alert */
+.login-error-alert {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 36px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.role-tab-btn.active {
-  background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.role-description-banner {
-  padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 12px;
-  color: #475569;
-  line-height: 1.4;
-  margin-bottom: 20px;
-}
-
-.login-error-msg {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
+  align-items: flex-start;
+  gap: 10px;
   background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  color: #dc2626;
+  border: 1.5px solid #ef4444;
+  color: #b91c1c;
+  padding: 12px 14px;
+  border-radius: 8px;
   font-size: 13px;
-  margin-bottom: 16px;
+  font-weight: 500;
+  margin-bottom: 18px;
+  line-height: 1.4;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-/* Form */
+.login-error-icon {
+  flex-shrink: 0;
+  color: #dc2626;
+  margin-top: 1px;
+}
+
+.login-error-text {
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Form Layout */
 .login-form-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-row {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-row label {
@@ -1368,6 +1350,12 @@ textarea:focus {
   font-weight: 600;
   color: #1e293b;
   margin-bottom: 6px;
+}
+
+.input-group {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .login-form-body input {
@@ -1380,12 +1368,40 @@ textarea:focus {
   border-radius: 8px !important;
   font-size: 14px !important;
   box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .login-form-body input:focus {
   border-color: #2563eb !important;
   outline: none !important;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.password-input-container input {
+  padding-right: 44px !important;
+}
+
+.password-eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.password-eye-btn:hover {
+  color: #1e293b;
 }
 
 .login-btn-primary {
@@ -1405,67 +1421,28 @@ textarea:focus {
   margin-top: 8px;
   transition: all 0.15s ease;
   box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  box-sizing: border-box;
 }
 
-.login-btn-primary:hover {
+.login-btn-primary:hover:not(:disabled) {
   background: #1d4ed8;
   box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
 }
 
 .login-btn-primary:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: not-allowed;
-}
-
-/* Quick Helper */
-.login-quick-helper {
-  margin-top: 20px;
-  padding: 12px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-}
-
-.helper-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.helper-chips-row {
-  display: flex;
-  gap: 8px;
-}
-
-.chip-action {
-  flex: 1;
-  padding: 6px 10px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #1e293b;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.chip-action:hover {
-  border-color: #2563eb;
-  color: #2563eb;
 }
 
 .login-card-foot {
   text-align: center;
-  margin-top: 22px;
+  margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid #e2e8f0;
   font-size: 11px;
   color: #94a3b8;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .spinner-dot {
@@ -1475,6 +1452,76 @@ textarea:focus {
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Responsiveness across Mobile & Small Screens (<= 480px, down to 320px) */
+@media (max-width: 480px) {
+  .login-wrapper {
+    padding: 16px 12px;
+  }
+
+  .login-box-card {
+    padding: 28px 20px;
+    border-radius: 12px;
+    width: 100%;
+  }
+
+  .login-title-section {
+    margin-bottom: 20px;
+  }
+
+  .login-app-logo {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+  }
+
+  .logo-letter {
+    font-size: 20px;
+  }
+
+  .login-title-section h1 {
+    font-size: 20px;
+  }
+
+  .login-app-tagline {
+    font-size: 12px;
+  }
+
+  .login-form-body {
+    gap: 14px;
+  }
+
+  .login-btn-primary {
+    height: 42px;
+    font-size: 13.5px;
+  }
+}
+
+/* Micro screens (320px - 350px) */
+@media (max-width: 350px) {
+  .login-wrapper {
+    padding: 12px 8px;
+  }
+
+  .login-box-card {
+    padding: 22px 14px;
+  }
+
+  .login-title-section h1 {
+    font-size: 18px;
+  }
+
+  .login-app-tagline {
+    font-size: 11px;
+  }
+
+  .login-card-foot {
+    font-size: 10px;
+  }
 }
 
 /* User Greeting Banner in Dashboard */
