@@ -195,4 +195,56 @@ public class AuthSecurityTest {
         // Verify it starts with standard BCrypt prefix $2a$ or $2b$
         assertTrue(dev.getPasswordHash().startsWith("$2a$") || dev.getPasswordHash().startsWith("$2b$"));
     }
+
+    @Test
+    public void testRegisterNewUser() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        ResponseEntity<?> res = authController.register(Map.of(
+                "name", "Samruddhi Dhawale",
+                "username", "samruddhi",
+                "password", "secretPass123",
+                "email", "samruddhi@orchestrix.io",
+                "role", "DEVELOPER"
+        ), request);
+
+        assertEquals(HttpStatus.CREATED, res.getStatusCode());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) res.getBody();
+        assertEquals("samruddhi", body.get("username"));
+        assertEquals("DEVELOPER", body.get("role"));
+        assertNotNull(body.get("token"));
+
+        // Verify login works with the new account
+        ResponseEntity<?> loginRes = authController.login(Map.of(
+                "username", "samruddhi",
+                "password", "secretPass123"
+        ), request);
+        assertEquals(HttpStatus.OK, loginRes.getStatusCode());
+    }
+
+    @Test
+    public void testResetPasswordAndLogin() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        // Reset password for developer
+        ResponseEntity<?> resetRes = authController.resetPassword(Map.of(
+                "username", "developer",
+                "newPassword", "newDevPass999"
+        ), request);
+        assertEquals(HttpStatus.OK, resetRes.getStatusCode());
+
+        // Old password should fail
+        ResponseEntity<?> oldLoginRes = authController.login(Map.of(
+                "username", "developer",
+                "password", "dev123"
+        ), request);
+        assertEquals(HttpStatus.UNAUTHORIZED, oldLoginRes.getStatusCode());
+
+        // New password must succeed
+        ResponseEntity<?> newLoginRes = authController.login(Map.of(
+                "username", "developer",
+                "password", "newDevPass999"
+        ), request);
+        assertEquals(HttpStatus.OK, newLoginRes.getStatusCode());
+    }
 }

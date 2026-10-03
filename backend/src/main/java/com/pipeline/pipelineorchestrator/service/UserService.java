@@ -144,6 +144,43 @@ public class UserService {
         return newUser;
     }
 
+    public UserAccount resetPassword(String identifier, String newRawPassword, String ipAddress) {
+        if (identifier == null || newRawPassword == null || identifier.trim().isEmpty() || newRawPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username and new password are required.");
+        }
+
+        String key = identifier.trim().toLowerCase();
+        UserAccount user = users.get(key);
+        if (user == null) {
+            // Also search by email
+            user = users.values().stream()
+                    .filter(u -> key.equalsIgnoreCase(u.getEmail()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        if (user == null) {
+            throw new IllegalArgumentException("Account not found. Please check your username or email.");
+        }
+
+        if (newRawPassword.trim().length() < 4) {
+            throw new IllegalArgumentException("New password must be at least 4 characters long.");
+        }
+
+        String newHash = passwordEncoder.encode(newRawPassword.trim());
+        user.setPasswordHash(newHash);
+
+        loginHistory.add(new LoginAuditEntry(
+                user.getUsername(),
+                user.getName(),
+                user.getRole(),
+                ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
+                "SUCCESS (Password Changed)"
+        ));
+
+        return user;
+    }
+
     public void recordLogout(String username, String ipAddress) {
         if (username == null) return;
         UserAccount user = users.get(username.trim().toLowerCase());

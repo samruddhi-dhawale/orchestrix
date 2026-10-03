@@ -101,6 +101,81 @@ public class AuthController {
         ));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody(required = false) Map<String, String> payload, HttpServletRequest request) {
+        if (payload == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Registration details are required."));
+        }
+
+        String username = payload.getOrDefault("username", "").trim();
+        String password = payload.getOrDefault("password", "").trim();
+        String name = payload.getOrDefault("name", "").trim();
+        String email = payload.getOrDefault("email", "").trim();
+        String role = payload.getOrDefault("role", "DEVELOPER").trim().toUpperCase();
+
+        if (username.isEmpty() || password.isEmpty() || name.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Full name, username, and password are required."));
+        }
+
+        if (password.length() < 4) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 4 characters long."));
+        }
+
+        try {
+            UserAccount newUser = userService.register(username, password, name, email, role);
+            boolean isAdmin = "ADMIN".equalsIgnoreCase(newUser.getRole());
+            List<String> permissions = isAdmin
+                    ? List.of("LAUNCH_ALL", "DEPLOY_PRODUCTION", "MANAGE_CLOUD", "VIEW_LOGS", "SYSTEM_SETTINGS", "VIEW_AUDIT")
+                    : List.of("LAUNCH_DEV_STAGING", "VIEW_LOGS", "VIEW_ARTIFACTS");
+
+            String token = jwtService.generateToken(newUser.getUsername(), newUser.getRole(), newUser.getName());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "authenticated", true,
+                    "token", token,
+                    "username", newUser.getUsername(),
+                    "role", newUser.getRole(),
+                    "name", newUser.getName(),
+                    "email", newUser.getEmail(),
+                    "lastVisitedPath", "/dashboard",
+                    "permissions", permissions,
+                    "organization", "Orchestrix Cloud Platform",
+                    "message", "Account successfully created!"
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody(required = false) Map<String, String> payload, HttpServletRequest request) {
+        if (payload == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Username and new password are required."));
+        }
+
+        String username = payload.getOrDefault("username", "").trim();
+        String newPassword = payload.getOrDefault("newPassword", "").trim();
+
+        if (username.isEmpty() || newPassword.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Username / ID and new password are required."));
+        }
+
+        if (newPassword.length() < 4) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 4 characters long."));
+        }
+
+        try {
+            UserAccount updated = userService.resetPassword(username, newPassword, getClientIp(request));
+            return ResponseEntity.ok(Map.of(
+                    "status", 200,
+                    "username", updated.getUsername(),
+                    "message", "Password successfully updated! You can now sign in with your new password."
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
