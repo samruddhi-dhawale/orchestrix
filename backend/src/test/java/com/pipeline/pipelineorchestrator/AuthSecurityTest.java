@@ -247,4 +247,43 @@ public class AuthSecurityTest {
         ), request);
         assertEquals(HttpStatus.OK, newLoginRes.getStatusCode());
     }
+
+    @Test
+    public void testForgotPasswordAndResetWithToken() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        // 1. Forgot password request
+        ResponseEntity<?> forgotRes = authController.forgotPassword(Map.of(
+                "email", "developer@orchestrix.io"
+        ));
+        assertEquals(HttpStatus.OK, forgotRes.getStatusCode());
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> forgotBody = (Map<String, Object>) forgotRes.getBody();
+        assertNotNull(forgotBody);
+        assertEquals("If an account exists for this email, password reset instructions have been sent.", forgotBody.get("message"));
+        String resetToken = (String) forgotBody.get("resetToken");
+        assertNotNull(resetToken);
+
+        // 2. Reset password using the 15-minute token
+        ResponseEntity<?> resetRes = authController.resetPassword(Map.of(
+                "token", resetToken,
+                "newPassword", "tokenDevPass888"
+        ), request);
+        assertEquals(HttpStatus.OK, resetRes.getStatusCode());
+
+        // 3. Login with the newly set password
+        ResponseEntity<?> loginRes = authController.login(Map.of(
+                "username", "developer",
+                "password", "tokenDevPass888"
+        ), request);
+        assertEquals(HttpStatus.OK, loginRes.getStatusCode());
+
+        // 4. Token cannot be reused (single-use token verification)
+        ResponseEntity<?> reuseRes = authController.resetPassword(Map.of(
+                "token", resetToken,
+                "newPassword", "anotherPassword123"
+        ), request);
+        assertEquals(HttpStatus.BAD_REQUEST, reuseRes.getStatusCode());
+    }
 }

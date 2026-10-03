@@ -41,8 +41,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      const isLoginRequest = error.config && error.config.url && error.config.url.includes("/auth/login");
-      if (!isLoginRequest) {
+      const isAuthRequest = error.config && error.config.url && error.config.url.includes("/auth/");
+      if (!isAuthRequest) {
         localStorage.removeItem("orchestrix_user");
         if (typeof window !== "undefined" && window.location.hash !== "#/login") {
           window.location.hash = "#/login";

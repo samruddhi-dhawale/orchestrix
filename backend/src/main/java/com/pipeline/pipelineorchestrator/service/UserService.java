@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import jakarta.annotation.PostConstruct;
 public class UserService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     // Secure pre-computed standard BCrypt hashes (10 rounds)
     // dev123:   $2a$10$Ehoi3o9Fx5lorAFSmQaKJufmeXKZLziDnd9qEC7eNupIpBIcaBrym
@@ -28,9 +31,38 @@ public class UserService {
     private static final String DEFAULT_DEV_HASH = "$2a$10$Ehoi3o9Fx5lorAFSmQaKJufmeXKZLziDnd9qEC7eNupIpBIcaBrym";
     private static final String DEFAULT_ADMIN_HASH = "$2a$10$XIOD6LoUzSnCH1ouJm.y5eXixDnCLe8ph3Sb1FDlDgrXxUOygAS3m";
 
+    public static class ResetTokenInfo {
+        private final String username;
+        private final long expiryTime;
+        private boolean used;
+
+        public ResetTokenInfo(String username, long expiryTime) {
+            this.username = username;
+            this.expiryTime = expiryTime;
+            this.used = false;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public long getExpiryTime() {
+            return expiryTime;
+        }
+
+        public boolean isUsed() {
+            return used;
+        }
+
+        public void setUsed(boolean used) {
+            this.used = used;
+        }
+    }
+
     private final PasswordEncoder passwordEncoder;
     private final LoginRateLimiter loginRateLimiter;
     private final Map<String, UserAccount> users = new ConcurrentHashMap<>();
+    private final Map<String, ResetTokenInfo> resetTokens = new ConcurrentHashMap<>();
     private final List<LoginAuditEntry> loginHistory = new CopyOnWriteArrayList<>();
 
     public UserService(PasswordEncoder passwordEncoder, LoginRateLimiter loginRateLimiter) {
@@ -71,8 +103,8 @@ public class UserService {
         users.put("developer", dev);
 
         // Record initial seed login audit
-        loginHistory.add(new LoginAuditEntry("developer", "Samruddhi D. (Lead Developer)", "DEVELOPER", "127.0.0.1 (Web Portal)", "SUCCESS"));
-        loginHistory.add(new LoginAuditEntry("admin", "System Administrator", "ADMIN", "127.0.0.1 (Cloud Console)", "SUCCESS"));
+        loginHistory.add(new LoginAuditEntry("developer", "Samruddhi D. (Lead Developer)", "DEVELOPER", "127.0.0.1 (Web Portal)", "LOGIN_SUCCESS"));
+        loginHistory.add(new LoginAuditEntry("admin", "System Administrator", "ADMIN", "127.0.0.1 (Cloud Console)", "LOGIN_SUCCESS"));
     }
 
     public UserAccount authenticate(String username, String rawPassword, String ipAddress) {
@@ -90,7 +122,7 @@ public class UserService {
                     user.getName(),
                     user.getRole(),
                     ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
-                    "SUCCESS"
+                    "LOGIN_SUCCESS"
             ));
             return user;
         }
@@ -98,37 +130,74 @@ public class UserService {
         // Record failed attempt in rate limiter
         loginRateLimiter.recordFailedAttempt(ipAddress);
 
-        // Record failed attempt in audit log (NEVER log the raw password)
+        // Record failed attempt in audit log (NEVER log the raw password or token)
         loginHistory.add(new LoginAuditEntry(
                 username.trim(),
                 user != null ? user.getName() : "Unknown User",
                 user != null ? user.getRole() : "UNAUTHORIZED",
                 ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
-                "FAILED (Invalid Credentials)"
+                "LOGIN_FAILURE"
         ));
 
         return null;
     }
 
-    public UserAccount register(String username, String rawPassword, String name, String email, String role) {
-        if (username == null || rawPassword == null || username.trim().isEmpty() || rawPassword.trim().isEmpty()) {
-            throw new IllegalArgumentException("Username and password cannot be empty");
+    /**
+     * Register a new user. Always assigns role DEVELOPER regardless of client request.
+     */
+    public UserAccount register(String name, String username, String email, String rawPassword, String requestedRole) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Full name is required.");
+        }
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username is required.");
+        }
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email address is required.");
+        }
+        if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
+            throw new IllegalArgumentException("Please provide a valid email address.");
+        }
+        if (rawPassword == null || rawPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Password is required.");
+        }
+        if (rawPassword.trim().length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters long.");
+        }
+        // Password strength: must contain letters and numbers
+        boolean hasLetter = rawPassword.chars().anyMatch(Character::isLetter);
+        boolean hasDigit = rawPassword.chars().anyMatch(Character::isDigit);
+        if (!hasLetter || !hasDigit) {
+            throw new IllegalArgumentException("Password must contain both letters and numbers.");
         }
 
         String key = username.trim().toLowerCase();
+        String normalizedEmail = email.trim().toLowerCase();
+
+        // Uniqueness check for username
         if (users.containsKey(key)) {
-            throw new IllegalArgumentException("User with username '" + username + "' already exists");
+            throw new IllegalArgumentException("An account with this username or email already exists.");
+        }
+
+        // Uniqueness check for email
+        boolean emailExists = users.values().stream()
+                .anyMatch(u -> normalizedEmail.equalsIgnoreCase(u.getEmail()));
+        if (emailExists) {
+            throw new IllegalArgumentException("An account with this username or email already exists.");
         }
 
         // Hash the password with BCrypt before storing
         String passwordHash = passwordEncoder.encode(rawPassword.trim());
 
+        // Mandatory: New public registrations are strictly assigned DEVELOPER role
+        String enforcedRole = "DEVELOPER";
+
         UserAccount newUser = new UserAccount(
                 key,
                 passwordHash,
-                name != null && !name.trim().isEmpty() ? name.trim() : username,
-                email != null && !email.trim().isEmpty() ? email.trim() : key + "@orchestrix.io",
-                role != null ? role.toUpperCase() : "DEVELOPER"
+                name.trim(),
+                normalizedEmail,
+                enforcedRole
         );
 
         users.put(key, newUser);
@@ -138,33 +207,110 @@ public class UserService {
                 newUser.getName(),
                 newUser.getRole(),
                 "127.0.0.1 (Registration)",
-                "SUCCESS (Account Created)"
+                "REGISTRATION_SUCCESS"
         ));
 
         return newUser;
     }
 
-    public UserAccount resetPassword(String identifier, String newRawPassword, String ipAddress) {
-        if (identifier == null || newRawPassword == null || identifier.trim().isEmpty() || newRawPassword.trim().isEmpty()) {
-            throw new IllegalArgumentException("Username and new password are required.");
+    /**
+     * Create a secure, single-use, 15-minute reset token for password recovery.
+     * Returns null if user is not found to prevent user enumeration.
+     */
+    public String createPasswordResetToken(String emailOrUsername) {
+        if (emailOrUsername == null || emailOrUsername.trim().isEmpty()) {
+            return null;
         }
 
-        String key = identifier.trim().toLowerCase();
-        UserAccount user = users.get(key);
+        String search = emailOrUsername.trim().toLowerCase();
+        UserAccount user = users.get(search);
         if (user == null) {
-            // Also search by email
             user = users.values().stream()
-                    .filter(u -> key.equalsIgnoreCase(u.getEmail()))
+                    .filter(u -> search.equalsIgnoreCase(u.getEmail()))
                     .findFirst()
                     .orElse(null);
         }
 
         if (user == null) {
-            throw new IllegalArgumentException("Account not found. Please check your username or email.");
+            return null;
         }
 
-        if (newRawPassword.trim().length() < 4) {
-            throw new IllegalArgumentException("New password must be at least 4 characters long.");
+        // Generate 15-minute single-use token
+        String token = UUID.randomUUID().toString();
+        long expiry = System.currentTimeMillis() + (15 * 60 * 1000);
+        resetTokens.put(token, new ResetTokenInfo(user.getUsername(), expiry));
+        return token;
+    }
+
+    /**
+     * Complete password reset using a verified reset token.
+     */
+    public UserAccount resetPasswordWithToken(String token, String newRawPassword, String ipAddress) {
+        if (token == null || token.trim().isEmpty()) {
+            throw new IllegalArgumentException("Reset token is required.");
+        }
+        if (newRawPassword == null || newRawPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("New password is required.");
+        }
+        if (newRawPassword.trim().length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters long.");
+        }
+        boolean hasLetter = newRawPassword.chars().anyMatch(Character::isLetter);
+        boolean hasDigit = newRawPassword.chars().anyMatch(Character::isDigit);
+        if (!hasLetter || !hasDigit) {
+            throw new IllegalArgumentException("Password must contain both letters and numbers.");
+        }
+
+        ResetTokenInfo info = resetTokens.get(token.trim());
+        if (info == null || info.isUsed() || System.currentTimeMillis() > info.getExpiryTime()) {
+            throw new IllegalArgumentException("Invalid or expired password reset link. Please request a new one.");
+        }
+
+        UserAccount user = users.get(info.getUsername());
+        if (user == null) {
+            throw new IllegalArgumentException("Account no longer exists.");
+        }
+
+        String newHash = passwordEncoder.encode(newRawPassword.trim());
+        user.setPasswordHash(newHash);
+
+        // Mark token as used to guarantee single-use
+        info.setUsed(true);
+        resetTokens.remove(token.trim());
+
+        loginHistory.add(new LoginAuditEntry(
+                user.getUsername(),
+                user.getName(),
+                user.getRole(),
+                ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
+                "PASSWORD_RESET_SUCCESS"
+        ));
+
+        return user;
+    }
+
+    /**
+     * Direct password reset using verified username or admin action.
+     */
+    public UserAccount resetPassword(String username, String newRawPassword, String ipAddress) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username is required.");
+        }
+        if (newRawPassword == null || newRawPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("New password is required.");
+        }
+        if (newRawPassword.trim().length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters long.");
+        }
+        boolean hasLetter = newRawPassword.chars().anyMatch(Character::isLetter);
+        boolean hasDigit = newRawPassword.chars().anyMatch(Character::isDigit);
+        if (!hasLetter || !hasDigit) {
+            throw new IllegalArgumentException("Password must contain both letters and numbers.");
+        }
+
+        UserAccount user = users.get(username.trim().toLowerCase());
+        if (user == null) {
+            throw new IllegalArgumentException("Account not found.");
         }
 
         String newHash = passwordEncoder.encode(newRawPassword.trim());
@@ -175,7 +321,7 @@ public class UserService {
                 user.getName(),
                 user.getRole(),
                 ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
-                "SUCCESS (Password Changed)"
+                "PASSWORD_RESET_SUCCESS"
         ));
 
         return user;
@@ -189,7 +335,7 @@ public class UserService {
                 user != null ? user.getName() : username,
                 user != null ? user.getRole() : "USER",
                 ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
-                "SUCCESS (Logged Out)"
+                "LOGOUT_SUCCESS"
         ));
     }
 

@@ -1329,6 +1329,72 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+/* Success Alert */
+.login-success-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1.5px solid #22c55e;
+  color: #15803d;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 18px;
+  line-height: 1.4;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.login-success-icon {
+  flex-shrink: 0;
+  color: #16a34a;
+  margin-top: 1px;
+}
+
+.login-success-text {
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Authentication Tabs (LOG IN / SIGN UP) */
+.auth-tabs {
+  display: flex;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 22px;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+  text-align: center;
+  outline: none;
+}
+
+.auth-tab-btn:hover {
+  color: #1e293b;
+}
+
+.auth-tab-btn.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
 /* Form Layout */
 .login-form-body {
   display: flex;
@@ -1336,6 +1402,91 @@ textarea:focus {
   gap: 16px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.label-with-link-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+.label-with-link-row label {
+  margin-bottom: 0 !important;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2563eb;
+  cursor: pointer;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.forgot-password-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.input-helper-text {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 5px;
+  line-height: 1.35;
+}
+
+/* Forgot Password View Styles */
+.forgot-password-view {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.forgot-header-text {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.forgot-header-text h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+.forgot-header-text p {
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.login-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  height: 42px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 4px;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.login-back-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .form-row {
@@ -1499,6 +1650,20 @@ textarea:focus {
     height: 42px;
     font-size: 13.5px;
   }
+
+  .auth-tab-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .forgot-password-link {
+    font-size: 11.5px;
+  }
+
+  .login-back-btn {
+    height: 40px;
+    font-size: 12.5px;
+  }
 }
 
 /* Micro screens (320px - 350px) */
@@ -1509,6 +1674,12 @@ textarea:focus {
 
   .login-box-card {
     padding: 22px 14px;
+  }
+
+  .auth-tab-btn {
+    padding: 6px 6px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
   }
 
   .login-title-section h1 {

@@ -107,65 +107,89 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("message", "Registration details are required."));
         }
 
-        String username = payload.getOrDefault("username", "").trim();
-        String password = payload.getOrDefault("password", "").trim();
         String name = payload.getOrDefault("name", "").trim();
+        String username = payload.getOrDefault("username", "").trim();
         String email = payload.getOrDefault("email", "").trim();
-        String role = payload.getOrDefault("role", "DEVELOPER").trim().toUpperCase();
+        String password = payload.getOrDefault("password", "").trim();
 
-        if (username.isEmpty() || password.isEmpty() || name.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Full name, username, and password are required."));
-        }
-
-        if (password.length() < 4) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 4 characters long."));
+        if (name.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Full name, username, email address, and password are required."));
         }
 
         try {
-            UserAccount newUser = userService.register(username, password, name, email, role);
-            boolean isAdmin = "ADMIN".equalsIgnoreCase(newUser.getRole());
-            List<String> permissions = isAdmin
-                    ? List.of("LAUNCH_ALL", "DEPLOY_PRODUCTION", "MANAGE_CLOUD", "VIEW_LOGS", "SYSTEM_SETTINGS", "VIEW_AUDIT")
-                    : List.of("LAUNCH_DEV_STAGING", "VIEW_LOGS", "VIEW_ARTIFACTS");
-
+            // Role is strictly enforced as DEVELOPER on server side
+            UserAccount newUser = userService.register(name, username, email, password, "DEVELOPER");
             String token = jwtService.generateToken(newUser.getUsername(), newUser.getRole(), newUser.getName());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "authenticated", true,
-                    "token", token,
+                    "status", 201,
+                    "success", true,
                     "username", newUser.getUsername(),
                     "role", newUser.getRole(),
-                    "name", newUser.getName(),
-                    "email", newUser.getEmail(),
-                    "lastVisitedPath", "/dashboard",
-                    "permissions", permissions,
-                    "organization", "Orchestrix Cloud Platform",
-                    "message", "Account successfully created!"
+                    "token", token,
+                    "message", "Account created successfully. Please log in."
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody(required = false) Map<String, String> payload) {
+        if (payload == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email address is required."));
+        }
+
+        String email = payload.getOrDefault("email", "").trim();
+        if (email.isEmpty()) {
+            email = payload.getOrDefault("emailOrUsername", "").trim();
+        }
+        if (email.isEmpty()) {
+            email = payload.getOrDefault("username", "").trim();
+        }
+
+        if (email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email address is required."));
+        }
+
+        String resetToken = userService.createPasswordResetToken(email);
+
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("status", 200);
+        response.put("message", "If an account exists for this email, password reset instructions have been sent.");
+        if (resetToken != null) {
+            response.put("resetToken", resetToken);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody(required = false) Map<String, String> payload, HttpServletRequest request) {
         if (payload == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Username and new password are required."));
+            return ResponseEntity.badRequest().body(Map.of("message", "Reset parameters and new password are required."));
         }
 
+        String token = payload.getOrDefault("token", "").trim();
         String username = payload.getOrDefault("username", "").trim();
         String newPassword = payload.getOrDefault("newPassword", "").trim();
 
-        if (username.isEmpty() || newPassword.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Username / ID and new password are required."));
+        if (newPassword.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "New password is required."));
         }
 
-        if (newPassword.length() < 4) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 4 characters long."));
+        if (token.isEmpty() && username.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Reset token or username / ID is required."));
         }
 
         try {
-            UserAccount updated = userService.resetPassword(username, newPassword, getClientIp(request));
+            UserAccount updated;
+            if (!token.isEmpty()) {
+                updated = userService.resetPasswordWithToken(token, newPassword, getClientIp(request));
+            } else {
+                updated = userService.resetPassword(username, newPassword, getClientIp(request));
+            }
+
             return ResponseEntity.ok(Map.of(
                     "status", 200,
                     "username", updated.getUsername(),
