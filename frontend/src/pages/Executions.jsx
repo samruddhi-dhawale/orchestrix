@@ -97,6 +97,7 @@ function Executions() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="high-contrast-input execution-search-input"
+              style={{ paddingLeft: "42px" }}
             />
             <Search size={16} className="execution-search-icon" />
           </div>
