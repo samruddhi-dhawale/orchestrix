@@ -1,0 +1,19 @@
+[ {
+  "username" : "admin",
+  "passwordHash" : "$2a$10$XIOD6LoUzSnCH1ouJm.y5eXixDnCLe8ph3Sb1FDlDgrXxUOygAS3m",
+  "name" : "System Administrator",
+  "email" : "admin@orchestrix.io",
+  "role" : "ADMIN",
+  "registeredAt" : "2026-10-04 17:55:59",
+  "lastLoginAt" : "2026-10-04 17:55:59",
+  "lastVisitedPath" : "/dashboard"
+}, {
+  "username" : "developer",
+  "passwordHash" : "$2a$10$Ehoi3o9Fx5lorAFSmQaKJufmeXKZLziDnd9qEC7eNupIpBIcaBrym",
+  "name" : "Samruddhi D. (Lead Developer)",
+  "email" : "developer@orchestrix.io",
+  "role" : "DEVELOPER",
+  "registeredAt" : "2026-10-04 17:55:59",
+  "lastLoginAt" : "2026-10-04 18:00:03",
+  "lastVisitedPath" : "/dashboard"
+} ]

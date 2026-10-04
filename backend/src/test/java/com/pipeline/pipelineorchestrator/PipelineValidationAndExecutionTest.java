@@ -23,7 +23,7 @@ public class PipelineValidationAndExecutionTest {
     @BeforeEach
     void setUp() {
         validator = new PipelineRequestValidator();
-        executionService = new ExecutionService(new JFrogArtifactPublisher());
+        executionService = new ExecutionService(new JFrogArtifactPublisher(), false);
     }
 
     @Test

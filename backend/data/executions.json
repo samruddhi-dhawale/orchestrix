@@ -1,0 +1,425 @@
+[ {
+  "executionId" : "exec-stag-6420",
+  "pipelineRequest" : {
+    "componentId" : "payment-gateway",
+    "subcomponentId" : "sub-pay-core",
+    "branch" : "release/v2.4",
+    "environment" : "staging",
+    "deploymentStrategy" : "ROLLING",
+    "initiatedBy" : "Samruddhi D. (Lead Developer)",
+    "initiatedRole" : "DEVELOPER"
+  },
+  "status" : "SUCCESS",
+  "startedAt" : "2026-10-04T11:55:59.9824766",
+  "completedAt" : "2026-10-04T11:56:06.4024766",
+  "totalDurationMs" : 6420,
+  "progressPercentage" : 100,
+  "currentStepIndex" : 7,
+  "currentStepName" : "Completed",
+  "steps" : [ {
+    "stepName" : "Checkout Source",
+    "status" : "SUCCESS",
+    "message" : "Source checkout completed for branch 'release/v2.4'",
+    "durationMs" : 1040,
+    "startedAt" : "10:00:01",
+    "completedAt" : "10:00:02"
+  }, {
+    "stepName" : "Build",
+    "status" : "SUCCESS",
+    "message" : "Maven compilation completed successfully",
+    "durationMs" : 1450,
+    "startedAt" : "10:00:02",
+    "completedAt" : "10:00:04"
+  }, {
+    "stepName" : "Test",
+    "status" : "SUCCESS",
+    "message" : "All 64 tests passed (93.8% coverage)",
+    "durationMs" : 1180,
+    "startedAt" : "10:00:04",
+    "completedAt" : "10:00:05"
+  }, {
+    "stepName" : "Security & Vulnerability Scan",
+    "status" : "SUCCESS",
+    "message" : "DevSecOps Gate: PASSED (0 Critical CVEs, 0 Leaked Secrets)",
+    "durationMs" : 920,
+    "startedAt" : "10:00:05",
+    "completedAt" : "10:00:06"
+  }, {
+    "stepName" : "Package",
+    "status" : "SUCCESS",
+    "message" : "Packaged JAR artifact (orchestrix-sub-pay-core-1.0.0.jar)",
+    "durationMs" : 980,
+    "startedAt" : "10:00:06",
+    "completedAt" : "10:00:07"
+  }, {
+    "stepName" : "Publish Artifact",
+    "status" : "SUCCESS",
+    "message" : "Artifact successfully published to JFrog Artifactory",
+    "durationMs" : 1120,
+    "startedAt" : "10:00:07",
+    "completedAt" : "10:00:08"
+  }, {
+    "stepName" : "Azure Cloud Deployment",
+    "status" : "SUCCESS",
+    "message" : "Deployed via ROLLING to Azure App Service in staging",
+    "durationMs" : 1320,
+    "startedAt" : "10:00:08",
+    "completedAt" : "10:00:09"
+  } ],
+  "logs" : [ {
+    "timestamp" : "17:55:59",
+    "level" : "INFO",
+    "step" : "Init",
+    "message" : "Historical pipeline record restored from persistence."
+  }, {
+    "timestamp" : "17:55:59",
+    "level" : "SUCCESS",
+    "step" : "Orchestrator",
+    "message" : "Pipeline completed successfully."
+  } ],
+  "artifact" : {
+    "name" : "orchestrix-sub-pay-core-1.0.0.jar",
+    "packaging" : "JAR",
+    "version" : "1.0.0",
+    "size" : "34.8 MB",
+    "checksumSha256" : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "repository" : "libs-release-local",
+    "repositoryUrl" : "https://jfrog.orchestrix.io/artifactory/libs-release-local/com/orchestrix/sub-pay-core/1.0.0/",
+    "publishedAt" : "2026-10-04 11:55:59"
+  },
+  "deployment" : {
+    "environment" : "staging",
+    "subscription" : "Azure Subscription (Orchestrix Cloud #9812-Azure)",
+    "resourceGroup" : "rg-orchestrix-staging",
+    "appServiceName" : "app-orchestrix-sub-pay-core-staging",
+    "region" : "East US",
+    "status" : "DEPLOYED",
+    "liveUrl" : "https://app-orchestrix-sub-pay-core-staging.azurewebsites.net",
+    "healthCheckUrl" : "https://app-orchestrix-sub-pay-core-staging.azurewebsites.net/actuator/health",
+    "healthStatus" : "200 OK - Healthy",
+    "deployedAt" : "2026-10-04 11:55:59",
+    "strategy" : "ROLLING",
+    "slot" : "staging <-> production (Swapped)",
+    "approvedBy" : "Admin Sign-off"
+  },
+  "totalStages" : 7,
+  "stageNames" : [ "Checkout Source", "Build", "Test", "Security & Vulnerability Scan", "Package", "Publish Artifact", "Azure Cloud Deployment" ]
+}, {
+  "executionId" : "exec-dev-5120",
+  "pipelineRequest" : {
+    "componentId" : "component-b",
+    "subcomponentId" : "sub-b1",
+    "branch" : "feature/jwt-auth",
+    "environment" : "development",
+    "deploymentStrategy" : "BLUE_GREEN",
+    "initiatedBy" : "Samruddhi D. (Lead Developer)",
+    "initiatedRole" : "DEVELOPER"
+  },
+  "status" : "SUCCESS",
+  "startedAt" : "2026-10-03T17:55:59.9824766",
+  "completedAt" : "2026-10-03T17:56:05.1024766",
+  "totalDurationMs" : 5120,
+  "progressPercentage" : 100,
+  "currentStepIndex" : 7,
+  "currentStepName" : "Completed",
+  "steps" : [ {
+    "stepName" : "Checkout Source",
+    "status" : "SUCCESS",
+    "message" : "Source checkout completed for branch 'feature/jwt-auth'",
+    "durationMs" : 1040,
+    "startedAt" : "10:00:01",
+    "completedAt" : "10:00:02"
+  }, {
+    "stepName" : "Build",
+    "status" : "SUCCESS",
+    "message" : "Maven compilation completed successfully",
+    "durationMs" : 1450,
+    "startedAt" : "10:00:02",
+    "completedAt" : "10:00:04"
+  }, {
+    "stepName" : "Test",
+    "status" : "SUCCESS",
+    "message" : "All 64 tests passed (93.8% coverage)",
+    "durationMs" : 1180,
+    "startedAt" : "10:00:04",
+    "completedAt" : "10:00:05"
+  }, {
+    "stepName" : "Security & Vulnerability Scan",
+    "status" : "SUCCESS",
+    "message" : "DevSecOps Gate: PASSED (0 Critical CVEs, 0 Leaked Secrets)",
+    "durationMs" : 920,
+    "startedAt" : "10:00:05",
+    "completedAt" : "10:00:06"
+  }, {
+    "stepName" : "Package",
+    "status" : "SUCCESS",
+    "message" : "Packaged JAR artifact (orchestrix-sub-b1-1.0.0.jar)",
+    "durationMs" : 980,
+    "startedAt" : "10:00:06",
+    "completedAt" : "10:00:07"
+  }, {
+    "stepName" : "Publish Artifact",
+    "status" : "SUCCESS",
+    "message" : "Artifact successfully published to JFrog Artifactory",
+    "durationMs" : 1120,
+    "startedAt" : "10:00:07",
+    "completedAt" : "10:00:08"
+  }, {
+    "stepName" : "Azure Cloud Deployment",
+    "status" : "SUCCESS",
+    "message" : "Deployed via BLUE_GREEN to Azure App Service in development",
+    "durationMs" : 1320,
+    "startedAt" : "10:00:08",
+    "completedAt" : "10:00:09"
+  } ],
+  "logs" : [ {
+    "timestamp" : "17:55:59",
+    "level" : "INFO",
+    "step" : "Init",
+    "message" : "Historical pipeline record restored from persistence."
+  }, {
+    "timestamp" : "17:55:59",
+    "level" : "SUCCESS",
+    "step" : "Orchestrator",
+    "message" : "Pipeline completed successfully."
+  } ],
+  "artifact" : {
+    "name" : "orchestrix-sub-b1-1.0.0.jar",
+    "packaging" : "JAR",
+    "version" : "1.0.0",
+    "size" : "34.8 MB",
+    "checksumSha256" : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "repository" : "libs-release-local",
+    "repositoryUrl" : "https://jfrog.orchestrix.io/artifactory/libs-release-local/com/orchestrix/sub-b1/1.0.0/",
+    "publishedAt" : "2026-10-03 17:55:59"
+  },
+  "deployment" : {
+    "environment" : "development",
+    "subscription" : "Azure Subscription (Orchestrix Cloud #9812-Azure)",
+    "resourceGroup" : "rg-orchestrix-development",
+    "appServiceName" : "app-orchestrix-sub-b1-development",
+    "region" : "East US",
+    "status" : "DEPLOYED",
+    "liveUrl" : "https://app-orchestrix-sub-b1-development.azurewebsites.net",
+    "healthCheckUrl" : "https://app-orchestrix-sub-b1-development.azurewebsites.net/actuator/health",
+    "healthStatus" : "200 OK - Healthy",
+    "deployedAt" : "2026-10-03 17:55:59",
+    "strategy" : "BLUE_GREEN",
+    "slot" : "staging <-> production (Swapped)",
+    "approvedBy" : "Admin Sign-off"
+  },
+  "totalStages" : 7,
+  "stageNames" : [ "Checkout Source", "Build", "Test", "Security & Vulnerability Scan", "Package", "Publish Artifact", "Azure Cloud Deployment" ]
+}, {
+  "executionId" : "exec-prod-7891",
+  "pipelineRequest" : {
+    "componentId" : "component-a",
+    "subcomponentId" : "sub-a1",
+    "branch" : "main",
+    "environment" : "production",
+    "deploymentStrategy" : "BLUE_GREEN",
+    "initiatedBy" : "Samruddhi D. (Lead Developer)",
+    "initiatedRole" : "DEVELOPER"
+  },
+  "status" : "SUCCESS",
+  "startedAt" : "2026-10-04T14:55:59.9824766",
+  "completedAt" : "2026-10-04T14:56:07.8324766",
+  "totalDurationMs" : 7850,
+  "progressPercentage" : 100,
+  "currentStepIndex" : 7,
+  "currentStepName" : "Completed",
+  "steps" : [ {
+    "stepName" : "Checkout Source",
+    "status" : "SUCCESS",
+    "message" : "Source checkout completed for branch 'main'",
+    "durationMs" : 1040,
+    "startedAt" : "10:00:01",
+    "completedAt" : "10:00:02"
+  }, {
+    "stepName" : "Build",
+    "status" : "SUCCESS",
+    "message" : "Maven compilation completed successfully",
+    "durationMs" : 1450,
+    "startedAt" : "10:00:02",
+    "completedAt" : "10:00:04"
+  }, {
+    "stepName" : "Test",
+    "status" : "SUCCESS",
+    "message" : "All 64 tests passed (93.8% coverage)",
+    "durationMs" : 1180,
+    "startedAt" : "10:00:04",
+    "completedAt" : "10:00:05"
+  }, {
+    "stepName" : "Security & Vulnerability Scan",
+    "status" : "SUCCESS",
+    "message" : "DevSecOps Gate: PASSED (0 Critical CVEs, 0 Leaked Secrets)",
+    "durationMs" : 920,
+    "startedAt" : "10:00:05",
+    "completedAt" : "10:00:06"
+  }, {
+    "stepName" : "Package",
+    "status" : "SUCCESS",
+    "message" : "Packaged JAR artifact (orchestrix-sub-a1-1.0.0.jar)",
+    "durationMs" : 980,
+    "startedAt" : "10:00:06",
+    "completedAt" : "10:00:07"
+  }, {
+    "stepName" : "Publish Artifact",
+    "status" : "SUCCESS",
+    "message" : "Artifact successfully published to JFrog Artifactory",
+    "durationMs" : 1120,
+    "startedAt" : "10:00:07",
+    "completedAt" : "10:00:08"
+  }, {
+    "stepName" : "Azure Cloud Deployment",
+    "status" : "SUCCESS",
+    "message" : "Deployed via BLUE_GREEN to Azure App Service in production",
+    "durationMs" : 1320,
+    "startedAt" : "10:00:08",
+    "completedAt" : "10:00:09"
+  } ],
+  "logs" : [ {
+    "timestamp" : "17:55:59",
+    "level" : "INFO",
+    "step" : "Init",
+    "message" : "Historical pipeline record restored from persistence."
+  }, {
+    "timestamp" : "17:55:59",
+    "level" : "SUCCESS",
+    "step" : "Orchestrator",
+    "message" : "Pipeline completed successfully."
+  } ],
+  "artifact" : {
+    "name" : "orchestrix-sub-a1-1.0.0.jar",
+    "packaging" : "JAR",
+    "version" : "1.0.0",
+    "size" : "34.8 MB",
+    "checksumSha256" : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "repository" : "libs-release-local",
+    "repositoryUrl" : "https://jfrog.orchestrix.io/artifactory/libs-release-local/com/orchestrix/sub-a1/1.0.0/",
+    "publishedAt" : "2026-10-04 14:55:59"
+  },
+  "deployment" : {
+    "environment" : "production",
+    "subscription" : "Azure Subscription (Orchestrix Cloud #9812-Azure)",
+    "resourceGroup" : "rg-orchestrix-production",
+    "appServiceName" : "app-orchestrix-sub-a1-production",
+    "region" : "East US 2",
+    "status" : "DEPLOYED",
+    "liveUrl" : "https://app-orchestrix-sub-a1-production.azurewebsites.net",
+    "healthCheckUrl" : "https://app-orchestrix-sub-a1-production.azurewebsites.net/actuator/health",
+    "healthStatus" : "200 OK - Healthy",
+    "deployedAt" : "2026-10-04 14:55:59",
+    "strategy" : "BLUE_GREEN",
+    "slot" : "staging <-> production (Swapped)",
+    "approvedBy" : "Admin Sign-off"
+  },
+  "totalStages" : 7,
+  "stageNames" : [ "Checkout Source", "Build", "Test", "Security & Vulnerability Scan", "Package", "Publish Artifact", "Azure Cloud Deployment" ]
+}, {
+  "executionId" : "exec-prod-4309",
+  "pipelineRequest" : {
+    "componentId" : "auth-service",
+    "subcomponentId" : "sub-auth-oauth",
+    "branch" : "main",
+    "environment" : "production",
+    "deploymentStrategy" : "CANARY",
+    "initiatedBy" : "System Administrator",
+    "initiatedRole" : "ADMIN"
+  },
+  "status" : "SUCCESS",
+  "startedAt" : "2026-10-02T17:55:59.9824766",
+  "completedAt" : "2026-10-02T17:56:08.0924766",
+  "totalDurationMs" : 8110,
+  "progressPercentage" : 100,
+  "currentStepIndex" : 7,
+  "currentStepName" : "Completed",
+  "steps" : [ {
+    "stepName" : "Checkout Source",
+    "status" : "SUCCESS",
+    "message" : "Source checkout completed for branch 'main'",
+    "durationMs" : 1040,
+    "startedAt" : "10:00:01",
+    "completedAt" : "10:00:02"
+  }, {
+    "stepName" : "Build",
+    "status" : "SUCCESS",
+    "message" : "Maven compilation completed successfully",
+    "durationMs" : 1450,
+    "startedAt" : "10:00:02",
+    "completedAt" : "10:00:04"
+  }, {
+    "stepName" : "Test",
+    "status" : "SUCCESS",
+    "message" : "All 64 tests passed (93.8% coverage)",
+    "durationMs" : 1180,
+    "startedAt" : "10:00:04",
+    "completedAt" : "10:00:05"
+  }, {
+    "stepName" : "Security & Vulnerability Scan",
+    "status" : "SUCCESS",
+    "message" : "DevSecOps Gate: PASSED (0 Critical CVEs, 0 Leaked Secrets)",
+    "durationMs" : 920,
+    "startedAt" : "10:00:05",
+    "completedAt" : "10:00:06"
+  }, {
+    "stepName" : "Package",
+    "status" : "SUCCESS",
+    "message" : "Packaged JAR artifact (orchestrix-sub-auth-oauth-1.0.0.jar)",
+    "durationMs" : 980,
+    "startedAt" : "10:00:06",
+    "completedAt" : "10:00:07"
+  }, {
+    "stepName" : "Publish Artifact",
+    "status" : "SUCCESS",
+    "message" : "Artifact successfully published to JFrog Artifactory",
+    "durationMs" : 1120,
+    "startedAt" : "10:00:07",
+    "completedAt" : "10:00:08"
+  }, {
+    "stepName" : "Azure Cloud Deployment",
+    "status" : "SUCCESS",
+    "message" : "Deployed via CANARY to Azure App Service in production",
+    "durationMs" : 1320,
+    "startedAt" : "10:00:08",
+    "completedAt" : "10:00:09"
+  } ],
+  "logs" : [ {
+    "timestamp" : "17:55:59",
+    "level" : "INFO",
+    "step" : "Init",
+    "message" : "Historical pipeline record restored from persistence."
+  }, {
+    "timestamp" : "17:55:59",
+    "level" : "SUCCESS",
+    "step" : "Orchestrator",
+    "message" : "Pipeline completed successfully."
+  } ],
+  "artifact" : {
+    "name" : "orchestrix-sub-auth-oauth-1.0.0.jar",
+    "packaging" : "JAR",
+    "version" : "1.0.0",
+    "size" : "34.8 MB",
+    "checksumSha256" : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "repository" : "libs-release-local",
+    "repositoryUrl" : "https://jfrog.orchestrix.io/artifactory/libs-release-local/com/orchestrix/sub-auth-oauth/1.0.0/",
+    "publishedAt" : "2026-10-02 17:55:59"
+  },
+  "deployment" : {
+    "environment" : "production",
+    "subscription" : "Azure Subscription (Orchestrix Cloud #9812-Azure)",
+    "resourceGroup" : "rg-orchestrix-production",
+    "appServiceName" : "app-orchestrix-sub-auth-oauth-production",
+    "region" : "East US 2",
+    "status" : "DEPLOYED",
+    "liveUrl" : "https://app-orchestrix-sub-auth-oauth-production.azurewebsites.net",
+    "healthCheckUrl" : "https://app-orchestrix-sub-auth-oauth-production.azurewebsites.net/actuator/health",
+    "healthStatus" : "200 OK - Healthy",
+    "deployedAt" : "2026-10-02 17:55:59",
+    "strategy" : "CANARY",
+    "slot" : "staging <-> production (Swapped)",
+    "approvedBy" : "Admin Sign-off"
+  },
+  "totalStages" : 7,
+  "stageNames" : [ "Checkout Source", "Build", "Test", "Security & Vulnerability Scan", "Package", "Publish Artifact", "Azure Cloud Deployment" ]
+} ]

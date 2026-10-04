@@ -383,7 +383,7 @@ function Login() {
                       type="text"
                       value={loginUsername}
                       onChange={(e) => setLoginUsername(e.target.value)}
-                      placeholder="Enter your username"
+                      placeholder="Enter your username or email"
                       autoComplete="username"
                       autoFocus
                       disabled={loading}

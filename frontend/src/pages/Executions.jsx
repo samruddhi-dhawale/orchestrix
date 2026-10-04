@@ -6,8 +6,15 @@ import RunsTable from "../components/RunsTable";
 
 function Executions() {
   const navigate = useNavigate();
-  const [runs, setRuns] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [runs, setRuns] = useState(() => {
+    try {
+      const cached = localStorage.getItem("orchestrix_cached_runs");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [envFilter, setEnvFilter] = useState("all");
@@ -17,10 +24,22 @@ function Executions() {
     setLoading(true);
     api.get("/pipelines")
       .then((res) => {
-        setRuns(res.data || []);
+        if (Array.isArray(res.data)) {
+          setRuns(res.data);
+          try {
+            localStorage.setItem("orchestrix_cached_runs", JSON.stringify(res.data));
+          } catch {
+            // ignore
+          }
+        }
         setError("");
       })
-      .catch(() => setError("Unable to connect to Orchestrix backend. Is Spring Boot running on port 8080?"))
+      .catch(() => {
+        const cached = localStorage.getItem("orchestrix_cached_runs");
+        if (!cached) {
+          setError("Unable to connect to Orchestrix backend. Is Spring Boot running on port 8080?");
+        }
+      })
       .finally(() => setLoading(false));
   };
 

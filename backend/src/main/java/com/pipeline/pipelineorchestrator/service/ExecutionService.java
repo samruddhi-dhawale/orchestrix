@@ -1,5 +1,11 @@
 package com.pipeline.pipelineorchestrator.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -12,8 +18,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pipeline.pipelineorchestrator.integration.ArtifactPublisher;
 import com.pipeline.pipelineorchestrator.model.ArtifactInfo;
 import com.pipeline.pipelineorchestrator.model.AzureDeploymentInfo;
@@ -40,17 +52,157 @@ public class ExecutionService {
     private final PipelineOrchestrator pipelineOrchestrator;
     private final ArtifactPublisher artifactPublisher;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ObjectMapper objectMapper;
+    private boolean persistenceEnabled = true;
 
     private final Map<String, PipelineExecution> executions = new ConcurrentHashMap<>();
 
+    @Autowired
     public ExecutionService(ArtifactPublisher artifactPublisher) {
+        this(artifactPublisher, true);
+    }
+
+    public ExecutionService(ArtifactPublisher artifactPublisher, boolean persistenceEnabled) {
         this.pipelineOrchestrator = new PipelineOrchestrator();
         this.artifactPublisher = artifactPublisher;
+        this.persistenceEnabled = persistenceEnabled;
+        this.objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(SerializationFeature.INDENT_OUTPUT);
+    }
+
+    public void setPersistenceEnabled(boolean persistenceEnabled) {
+        this.persistenceEnabled = persistenceEnabled;
+    }
+
+    private synchronized Path resolveDataDirectory() {
+        Path candidate = Paths.get("data");
+        if (Files.exists(Paths.get("backend/src"))) {
+            candidate = Paths.get("backend/data");
+        }
+        if (!Files.exists(candidate)) {
+            try {
+                Files.createDirectories(candidate);
+            } catch (IOException ignored) {
+            }
+        }
+        return candidate;
+    }
+
+    private Path getExecutionsFilePath() {
+        return resolveDataDirectory().resolve("executions.json");
+    }
+
+    private synchronized void persistExecutions() {
+        if (!persistenceEnabled) {
+            return;
+        }
+        try {
+            Path targetFile = getExecutionsFilePath();
+            List<PipelineExecution> list = new ArrayList<>(executions.values());
+            Path tempFile = targetFile.resolveSibling(targetFile.getFileName().toString() + ".tmp");
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(tempFile.toFile(), list);
+            try {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (Exception moveEx) {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Failed to persist executions to disk: " + e.getMessage());
+        }
     }
 
     @PostConstruct
     public void initSampleExecutions() {
-        // Starts clean with 0 executions. Only increments when the user launches a pipeline!
+        if (persistenceEnabled) {
+            Path file = getExecutionsFilePath();
+            if (Files.exists(file) && Files.isRegularFile(file)) {
+                try {
+                    List<PipelineExecution> list = objectMapper.readValue(
+                            file.toFile(),
+                            new TypeReference<List<PipelineExecution>>() {}
+                    );
+                    if (list != null && !list.isEmpty()) {
+                        for (PipelineExecution exec : list) {
+                            if (exec.getExecutionId() != null) {
+                                executions.put(exec.getExecutionId(), exec);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Notice: Could not read existing executions.json, seeding defaults: " + e.getMessage());
+                }
+            }
+        }
+
+        // If file was not found or was empty, seed the 4 deployed pipelines
+        if (executions.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+
+            // Run 1: Production Core Platform
+            seedExecution(
+                    "exec-prod-7891",
+                    "component-a",
+                    "sub-a1",
+                    "main",
+                    "production",
+                    ExecutionStatus.SUCCESS,
+                    now.minusHours(3),
+                    7850L,
+                    "BLUE_GREEN",
+                    "Samruddhi D. (Lead Developer)",
+                    "DEVELOPER"
+            );
+
+            // Run 2: Staging Payment Gateway
+            seedExecution(
+                    "exec-stag-6420",
+                    "payment-gateway",
+                    "sub-pay-core",
+                    "release/v2.4",
+                    "staging",
+                    ExecutionStatus.SUCCESS,
+                    now.minusHours(6),
+                    6420L,
+                    "ROLLING",
+                    "Samruddhi D. (Lead Developer)",
+                    "DEVELOPER"
+            );
+
+            // Run 3: Development API Services
+            seedExecution(
+                    "exec-dev-5120",
+                    "component-b",
+                    "sub-b1",
+                    "feature/jwt-auth",
+                    "development",
+                    ExecutionStatus.SUCCESS,
+                    now.minusDays(1),
+                    5120L,
+                    "BLUE_GREEN",
+                    "Samruddhi D. (Lead Developer)",
+                    "DEVELOPER"
+            );
+
+            // Run 4: Production Identity & Access Hub
+            seedExecution(
+                    "exec-prod-4309",
+                    "auth-service",
+                    "sub-auth-oauth",
+                    "main",
+                    "production",
+                    ExecutionStatus.SUCCESS,
+                    now.minusDays(2),
+                    8110L,
+                    "CANARY",
+                    "System Administrator",
+                    "ADMIN"
+            );
+
+            persistExecutions();
+        }
     }
 
     public PipelineExecution executePipeline(PipelineRequest request) {
@@ -92,6 +244,7 @@ public class ExecutionService {
         execution.setStageNames(stageNames);
 
         executions.put(execution.getExecutionId(), execution);
+        persistExecutions();
 
         // Core automated steps (Beginning directly at Checkout Source)
         List<PipelineStep> preApprovalSteps = List.of(
@@ -137,6 +290,8 @@ public class ExecutionService {
                 execution.setStatus(ExecutionStatus.FAILED);
                 execution.setCompletedAt(LocalDateTime.now());
                 execution.addLog("ERROR", "Orchestrator", "Unexpected runtime error: " + e.getMessage());
+            } finally {
+                persistExecutions();
             }
         }, executorService);
 
@@ -164,6 +319,7 @@ public class ExecutionService {
         execution.setCurrentStepIndex(7);
         execution.setCurrentStepName("Azure Cloud Deployment");
         execution.setProgressPercentage((int) Math.round((7.0 / 8.0) * 100)); // 88%
+        persistExecutions();
 
         CompletableFuture.runAsync(() -> {
             try {
@@ -172,6 +328,8 @@ public class ExecutionService {
             } catch (Exception e) {
                 execution.setStatus(ExecutionStatus.FAILED);
                 execution.addLog("ERROR", "Azure Cloud Deployment", "Deployment failed post-approval: " + e.getMessage());
+            } finally {
+                persistExecutions();
             }
         }, executorService);
 
@@ -199,6 +357,7 @@ public class ExecutionService {
         long totalMs = java.time.Duration.between(execution.getStartedAt(), execution.getCompletedAt()).toMillis();
         execution.setTotalDurationMs(totalMs);
         execution.addLog("ERROR", "Production Approval", "❌ Production release was REJECTED by Administrator [" + adminUser + "]. Reason: " + (reason != null ? reason : "Canceled by policy"));
+        persistExecutions();
         return execution;
     }
 
@@ -227,7 +386,16 @@ public class ExecutionService {
 
     private void seedExecution(String id, String comp, String sub, String branch, String env,
                               ExecutionStatus status, LocalDateTime start, long durationMs, String strategy) {
+        seedExecution(id, comp, sub, branch, env, status, start, durationMs, strategy, "Samruddhi D.", "DEVELOPER");
+    }
+
+    private void seedExecution(String id, String comp, String sub, String branch, String env,
+                              ExecutionStatus status, LocalDateTime start, long durationMs, String strategy,
+                              String initiatedBy, String initiatedRole) {
         PipelineRequest req = new PipelineRequest(comp, sub, branch, env, strategy);
+        req.setInitiatedBy(initiatedBy != null ? initiatedBy : "Samruddhi D.");
+        req.setInitiatedRole(initiatedRole != null ? initiatedRole : "DEVELOPER");
+
         PipelineExecution exec = new PipelineExecution(id, req);
         exec.setStatus(status);
         exec.setStartedAt(start);
@@ -289,7 +457,7 @@ public class ExecutionService {
         }
         exec.setSteps(stepResults);
 
-        exec.addLog("INFO", "Init", "Historical pipeline record loaded into memory.");
+        exec.addLog("INFO", "Init", "Historical pipeline record restored from persistence.");
         exec.addLog("SUCCESS", "Orchestrator", status == ExecutionStatus.SUCCESS ? "Pipeline completed successfully." : "Pipeline terminated with errors.");
 
         executions.put(id, exec);

@@ -32,7 +32,7 @@ public class AuthSecurityTest {
     public void setup() {
         encoder = new BCryptPasswordEncoder();
         rateLimiter = new LoginRateLimiter();
-        userService = new UserService(encoder, rateLimiter);
+        userService = new UserService(encoder, rateLimiter, false);
         userService.initDefaultUsers();
         jwtService = new JwtService("OrchestrixSecureJwtKeyForCiCdOrchestrationPlatform2026!", 86400000L);
         authController = new AuthController(userService, jwtService, rateLimiter);

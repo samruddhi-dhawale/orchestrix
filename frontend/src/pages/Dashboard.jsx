@@ -10,18 +10,35 @@ function Dashboard() {
   const user = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
   const isAdmin = user.role === "ADMIN";
 
-  const [runs, setRuns] = useState([]);
+  const [runs, setRuns] = useState(() => {
+    try {
+      const cached = localStorage.getItem("orchestrix_cached_runs");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get("/pipelines")
       .then((res) => {
-        setRuns(res.data || []);
+        if (Array.isArray(res.data)) {
+          setRuns(res.data);
+          try {
+            localStorage.setItem("orchestrix_cached_runs", JSON.stringify(res.data));
+          } catch {
+            // ignore
+          }
+        }
         setError("");
       })
       .catch(() => {
-        setError("Unable to connect to backend on port 8080. Check if Spring Boot is running.");
+        const cached = localStorage.getItem("orchestrix_cached_runs");
+        if (!cached) {
+          setError("Unable to connect to backend on port 8080. Check if Spring Boot is running.");
+        }
       })
       .finally(() => setLoading(false));
   }, []);

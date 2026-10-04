@@ -208,6 +208,17 @@ function LaunchPipeline() {
       const res = await api.post("/pipelines", payload);
       const executionId = res.data?.executionId;
 
+      if (res.data) {
+        try {
+          const cached = localStorage.getItem("orchestrix_cached_runs");
+          const runsList = cached ? JSON.parse(cached) : [];
+          runsList.unshift(res.data);
+          localStorage.setItem("orchestrix_cached_runs", JSON.stringify(runsList));
+        } catch {
+          // ignore
+        }
+      }
+
       if (executionId) {
         navigate(`/execution/${executionId}`);
       } else {

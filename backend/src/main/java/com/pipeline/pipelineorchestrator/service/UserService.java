@@ -1,5 +1,11 @@
 package com.pipeline.pipelineorchestrator.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -11,9 +17,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pipeline.pipelineorchestrator.model.LoginAuditEntry;
 import com.pipeline.pipelineorchestrator.model.UserAccount;
 
@@ -59,15 +71,139 @@ public class UserService {
         }
     }
 
+    /**
+     * Internal persistence model that preserves passwordHash across restarts
+     * without exposing it via the public REST API UserAccount model.
+     */
+    public static class StoredUser {
+        private String username;
+        private String passwordHash;
+        private String name;
+        private String email;
+        private String role;
+        private String registeredAt;
+        private String lastLoginAt;
+        private String lastVisitedPath;
+
+        public StoredUser() {
+        }
+
+        public StoredUser(UserAccount account) {
+            this.username = account.getUsername();
+            this.passwordHash = account.getPasswordHash();
+            this.name = account.getName();
+            this.email = account.getEmail();
+            this.role = account.getRole();
+            this.registeredAt = account.getRegisteredAt();
+            this.lastLoginAt = account.getLastLoginAt();
+            this.lastVisitedPath = account.getLastVisitedPath();
+        }
+
+        public UserAccount toUserAccount() {
+            UserAccount account = new UserAccount();
+            account.setUsername(this.username);
+            account.setPasswordHash(this.passwordHash);
+            account.setName(this.name);
+            account.setEmail(this.email);
+            account.setRole(this.role != null ? this.role : "DEVELOPER");
+            account.setRegisteredAt(this.registeredAt);
+            account.setLastLoginAt(this.lastLoginAt);
+            account.setLastVisitedPath(this.lastVisitedPath != null ? this.lastVisitedPath : "/dashboard");
+            return account;
+        }
+
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
+
+        public String getPasswordHash() { return passwordHash; }
+        public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
+
+        public String getRegisteredAt() { return registeredAt; }
+        public void setRegisteredAt(String registeredAt) { this.registeredAt = registeredAt; }
+
+        public String getLastLoginAt() { return lastLoginAt; }
+        public void setLastLoginAt(String lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+
+        public String getLastVisitedPath() { return lastVisitedPath; }
+        public void setLastVisitedPath(String lastVisitedPath) { this.lastVisitedPath = lastVisitedPath; }
+    }
+
     private final PasswordEncoder passwordEncoder;
     private final LoginRateLimiter loginRateLimiter;
+    private final ObjectMapper objectMapper;
+    private boolean persistenceEnabled = true;
+
     private final Map<String, UserAccount> users = new ConcurrentHashMap<>();
     private final Map<String, ResetTokenInfo> resetTokens = new ConcurrentHashMap<>();
     private final List<LoginAuditEntry> loginHistory = new CopyOnWriteArrayList<>();
 
+    @Autowired
     public UserService(PasswordEncoder passwordEncoder, LoginRateLimiter loginRateLimiter) {
+        this(passwordEncoder, loginRateLimiter, true);
+    }
+
+    public UserService(PasswordEncoder passwordEncoder, LoginRateLimiter loginRateLimiter, boolean persistenceEnabled) {
         this.passwordEncoder = passwordEncoder;
         this.loginRateLimiter = loginRateLimiter;
+        this.persistenceEnabled = persistenceEnabled;
+        this.objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(SerializationFeature.INDENT_OUTPUT);
+    }
+
+    public void setPersistenceEnabled(boolean persistenceEnabled) {
+        this.persistenceEnabled = persistenceEnabled;
+    }
+
+    private synchronized Path resolveDataDirectory() {
+        Path candidate = Paths.get("data");
+        if (Files.exists(Paths.get("backend/src"))) {
+            candidate = Paths.get("backend/data");
+        }
+        if (!Files.exists(candidate)) {
+            try {
+                Files.createDirectories(candidate);
+            } catch (IOException ignored) {
+            }
+        }
+        return candidate;
+    }
+
+    private Path getUsersFilePath() {
+        return resolveDataDirectory().resolve("users.json");
+    }
+
+    private synchronized void persistUsers() {
+        if (!persistenceEnabled) {
+            return;
+        }
+        try {
+            Path targetFile = getUsersFilePath();
+            List<StoredUser> storedList = new ArrayList<>();
+            for (UserAccount acc : users.values()) {
+                storedList.add(new StoredUser(acc));
+            }
+            Path tempFile = targetFile.resolveSibling(targetFile.getFileName().toString() + ".tmp");
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(tempFile.toFile(), storedList);
+            try {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (Exception moveEx) {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Failed to persist users to disk: " + e.getMessage());
+        }
     }
 
     @PostConstruct
@@ -83,45 +219,121 @@ public class UserService {
             adminHash = DEFAULT_ADMIN_HASH;
         }
 
-        // Enterprise accounts initialized with BCrypt hashes only - NO plaintext passwords
-        UserAccount admin = new UserAccount(
-                "admin",
-                adminHash.trim(),
-                "System Administrator",
-                "admin@orchestrix.io",
-                "ADMIN"
-        );
-        users.put("admin", admin);
+        // 1. Load persisted users if persistence is enabled and file exists
+        if (persistenceEnabled) {
+            Path usersFile = getUsersFilePath();
+            if (Files.exists(usersFile) && Files.isRegularFile(usersFile)) {
+                try {
+                    List<StoredUser> storedList = objectMapper.readValue(
+                            usersFile.toFile(),
+                            new TypeReference<List<StoredUser>>() {}
+                    );
+                    if (storedList != null && !storedList.isEmpty()) {
+                        for (StoredUser su : storedList) {
+                            if (su.getUsername() != null && !su.getUsername().isBlank()) {
+                                users.put(su.getUsername().trim().toLowerCase(), su.toUserAccount());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Notice: Could not read existing users.json, reseeding defaults: " + e.getMessage());
+                }
+            }
+        }
 
-        UserAccount dev = new UserAccount(
-                "developer",
-                devHash.trim(),
-                "Samruddhi D. (Lead Developer)",
-                "developer@orchestrix.io",
-                "DEVELOPER"
-        );
-        users.put("developer", dev);
+        // 2. Ensure system accounts exist
+        if (!users.containsKey("admin")) {
+            UserAccount admin = new UserAccount(
+                    "admin",
+                    adminHash.trim(),
+                    "System Administrator",
+                    "admin@orchestrix.io",
+                    "ADMIN"
+            );
+            users.put("admin", admin);
+        }
+
+        if (!users.containsKey("developer")) {
+            UserAccount dev = new UserAccount(
+                    "developer",
+                    devHash.trim(),
+                    "Samruddhi D. (Lead Developer)",
+                    "developer@orchestrix.io",
+                    "DEVELOPER"
+            );
+            users.put("developer", dev);
+        }
+
+        // 3. Immediately persist if enabled
+        persistUsers();
 
         // Record initial seed login audit
         loginHistory.add(new LoginAuditEntry("developer", "Samruddhi D. (Lead Developer)", "DEVELOPER", "127.0.0.1 (Web Portal)", "LOGIN_SUCCESS"));
         loginHistory.add(new LoginAuditEntry("admin", "System Administrator", "ADMIN", "127.0.0.1 (Cloud Console)", "LOGIN_SUCCESS"));
     }
 
-    public UserAccount authenticate(String username, String rawPassword, String ipAddress) {
-        if (username == null || rawPassword == null) {
+    private boolean isDeveloperAlias(String input) {
+        if (input == null) return false;
+        String cleaned = input.replaceAll("[\\s-_.]", "").toLowerCase();
+        return cleaned.equals("developer")
+                || cleaned.equals("samruddhi")
+                || cleaned.equals("samruddhidhawale")
+                || cleaned.equals("samruddhid")
+                || input.equalsIgnoreCase("developer@orchestrix.io")
+                || input.equalsIgnoreCase("dhawalesamruddhi2@gmail.com");
+    }
+
+    private boolean isAdminAlias(String input) {
+        if (input == null) return false;
+        String cleaned = input.replaceAll("[\\s-_.]", "").toLowerCase();
+        return cleaned.equals("admin")
+                || cleaned.equals("administrator")
+                || cleaned.equals("systemadmin")
+                || input.equalsIgnoreCase("admin@orchestrix.io");
+    }
+
+    public UserAccount authenticate(String usernameOrEmail, String rawPassword, String ipAddress) {
+        if (usernameOrEmail == null || rawPassword == null) {
             return null;
         }
 
-        String search = username.trim().toLowerCase();
+        String search = usernameOrEmail.trim().toLowerCase();
+
+        // 1. Direct username key lookup
         UserAccount user = users.get(search);
-        if (user == null && "samruddhi-dhawale".equals(search)) {
+
+        // 2. Lookup by registered email
+        if (user == null) {
+            user = users.values().stream()
+                    .filter(u -> u.getEmail() != null && u.getEmail().trim().equalsIgnoreCase(search))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        // 3. Lookup case-insensitive username
+        if (user == null) {
+            user = users.values().stream()
+                    .filter(u -> u.getUsername() != null && u.getUsername().trim().equalsIgnoreCase(search))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        // 4. Developer aliases (developer, samruddhi, samruddhi-dhawale, samruddhidhawale, etc.)
+        if (user == null && isDeveloperAlias(search)) {
             user = users.get("developer");
+        }
+
+        // 5. Admin aliases
+        if (user == null && isAdminAlias(search)) {
+            user = users.get("admin");
         }
 
         if (user != null && passwordEncoder.matches(rawPassword.trim(), user.getPasswordHash())) {
             // Success: reset rate limit attempts for this client IP
             loginRateLimiter.resetAttempts(ipAddress);
             user.setLastLoginAt(LocalDateTime.now().format(FORMATTER));
+            persistUsers();
+
             loginHistory.add(new LoginAuditEntry(
                     user.getUsername(),
                     user.getName(),
@@ -135,9 +347,9 @@ public class UserService {
         // Record failed attempt in rate limiter
         loginRateLimiter.recordFailedAttempt(ipAddress);
 
-        // Record failed attempt in audit log (NEVER log the raw password or token)
+        // Record failed attempt in audit log
         loginHistory.add(new LoginAuditEntry(
-                username.trim(),
+                usernameOrEmail.trim(),
                 user != null ? user.getName() : "Unknown User",
                 user != null ? user.getRole() : "UNAUTHORIZED",
                 ipAddress != null ? ipAddress : "127.0.0.1 (Web Portal)",
@@ -206,6 +418,7 @@ public class UserService {
         );
 
         users.put(key, newUser);
+        persistUsers();
 
         loginHistory.add(new LoginAuditEntry(
                 newUser.getUsername(),
@@ -231,9 +444,16 @@ public class UserService {
         UserAccount user = users.get(search);
         if (user == null) {
             user = users.values().stream()
-                    .filter(u -> search.equalsIgnoreCase(u.getEmail()))
+                    .filter(u -> (u.getEmail() != null && search.equalsIgnoreCase(u.getEmail()))
+                            || (u.getUsername() != null && search.equalsIgnoreCase(u.getUsername())))
                     .findFirst()
                     .orElse(null);
+        }
+        if (user == null && isDeveloperAlias(search)) {
+            user = users.get("developer");
+        }
+        if (user == null && isAdminAlias(search)) {
+            user = users.get("admin");
         }
 
         if (user == null) {
@@ -282,6 +502,7 @@ public class UserService {
         // Mark token as used to guarantee single-use
         info.setUsed(true);
         resetTokens.remove(token.trim());
+        persistUsers();
 
         loginHistory.add(new LoginAuditEntry(
                 user.getUsername(),
@@ -313,13 +534,29 @@ public class UserService {
             throw new IllegalArgumentException("Password must contain both letters and numbers.");
         }
 
-        UserAccount user = users.get(username.trim().toLowerCase());
+        String search = username.trim().toLowerCase();
+        UserAccount user = users.get(search);
+        if (user == null) {
+            user = users.values().stream()
+                    .filter(u -> (u.getUsername() != null && u.getUsername().equalsIgnoreCase(search))
+                            || (u.getEmail() != null && u.getEmail().equalsIgnoreCase(search)))
+                    .findFirst()
+                    .orElse(null);
+        }
+        if (user == null && isDeveloperAlias(search)) {
+            user = users.get("developer");
+        }
+        if (user == null && isAdminAlias(search)) {
+            user = users.get("admin");
+        }
+
         if (user == null) {
             throw new IllegalArgumentException("Account not found.");
         }
 
         String newHash = passwordEncoder.encode(newRawPassword.trim());
         user.setPasswordHash(newHash);
+        persistUsers();
 
         loginHistory.add(new LoginAuditEntry(
                 user.getUsername(),
@@ -349,12 +586,28 @@ public class UserService {
         UserAccount user = users.get(username.trim().toLowerCase());
         if (user != null) {
             user.setLastVisitedPath(path);
+            persistUsers();
         }
     }
 
     public UserAccount getUser(String username) {
         if (username == null) return null;
-        return users.get(username.trim().toLowerCase());
+        String search = username.trim().toLowerCase();
+        UserAccount user = users.get(search);
+        if (user == null) {
+            user = users.values().stream()
+                    .filter(u -> (u.getUsername() != null && u.getUsername().equalsIgnoreCase(search))
+                            || (u.getEmail() != null && u.getEmail().equalsIgnoreCase(search)))
+                    .findFirst()
+                    .orElse(null);
+        }
+        if (user == null && isDeveloperAlias(search)) {
+            user = users.get("developer");
+        }
+        if (user == null && isAdminAlias(search)) {
+            user = users.get("admin");
+        }
+        return user;
     }
 
     public List<UserAccount> getAllUsers() {
