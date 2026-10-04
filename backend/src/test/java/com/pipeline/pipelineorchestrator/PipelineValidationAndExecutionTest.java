@@ -112,7 +112,7 @@ public class PipelineValidationAndExecutionTest {
     }
 
     @Test
-    void testProductionApprovalPipelineExecutionHas8Stages() {
+    void testProductionPipelineExecutionDirect7Stages() {
         PipelineRequest req = new PipelineRequest();
         req.setComponentId("payment-gateway");
         req.setSubcomponentId("sub-pay-core");
@@ -125,11 +125,12 @@ public class PipelineValidationAndExecutionTest {
         PipelineExecution execution = executionService.executePipeline(req);
 
         assertNotNull(execution);
-        assertEquals(8, execution.getTotalStages());
+        assertEquals(7, execution.getTotalStages());
         assertEquals("Checkout Source", execution.getStageNames().get(0));
-        assertEquals("Production Approval", execution.getStageNames().get(6));
-        assertEquals("Azure Cloud Deployment", execution.getStageNames().get(7));
+        assertEquals("Publish Artifact", execution.getStageNames().get(5));
+        assertEquals("Azure Cloud Deployment", execution.getStageNames().get(6));
 
         assertFalse(execution.getStageNames().contains("Validate Configuration"));
+        assertFalse(execution.getStageNames().contains("Production Approval"));
     }
 }

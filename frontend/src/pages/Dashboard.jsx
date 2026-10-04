@@ -69,32 +69,6 @@ function Dashboard() {
 
       {error && <div className="inline-error">{error}</div>}
 
-      {/* Admin Action Alert for Pending Production Approvals */}
-      {isAdmin && pendingApprovals.length > 0 && (
-        <div className="approval-gate-banner dynamic-fade-in" style={{ marginBottom: 20 }}>
-          <div className="approval-content">
-            <div className="approval-icon-box">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <h3>{pendingApprovals.length} Production Release Awaiting Your Approval</h3>
-              <p>
-                Developers have submitted releases for Production. As Administrator, you can review the DevSecOps scan and authorize Azure deployment.
-              </p>
-            </div>
-          </div>
-          <div className="approval-actions">
-            <Link
-              to={`/execution/${pendingApprovals[0].executionId}`}
-              className="approval-approve-btn"
-              style={{ textDecoration: "none" }}
-            >
-              Review Run #{pendingApprovals[0].executionId.slice(0, 8)} →
-            </Link>
-          </div>
-        </div>
-      )}
-
       {/* Role Banner */}
       <div className="user-role-greeting-banner">
         <div className="greeting-text">

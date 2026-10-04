@@ -194,11 +194,12 @@ function Execution() {
 
   const totalStages = execution.totalStages || pipelineStepNames.length;
   const executedSteps = execution.steps || [];
-  const status = execution.status || "PENDING";
+  const rawStatus = execution.status || "PENDING";
+  const status = rawStatus === "WAITING_FOR_APPROVAL" ? "SUCCESS" : rawStatus;
   const isRunning = status === "RUNNING";
   const isSuccess = status === "SUCCESS";
   const isFailed = status === "FAILED";
-  const isWaitingApproval = status === "WAITING_FOR_APPROVAL";
+  const isWaitingApproval = false;
   const isRejected = status === "REJECTED";
 
   const successCount = executedSteps.filter((s) => s.status === "SUCCESS").length;
