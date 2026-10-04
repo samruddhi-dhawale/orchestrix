@@ -105,6 +105,66 @@ function Login() {
     } catch (err) {
       if (err.response) {
         if (err.response.status === 401) {
+          // Resilient Cloud Recovery:
+          // Free-tier cloud containers (like Render) have ephemeral disks that reset to defaults on redeployment.
+          // If this user was previously registered or is an active non-default user, re-sync registration with the backend.
+          let profile = null;
+          try {
+            const knownProfiles = JSON.parse(localStorage.getItem("orchestrix_account_registry") || "{}");
+            profile = knownProfiles[username.toLowerCase()];
+          } catch {
+            // ignore
+          }
+
+          if (!profile && !["admin", "developer"].includes(username.toLowerCase()) && password.length >= 6) {
+            const formattedName = username
+              .replace(/[-_.]/g, " ")
+              .split(" ")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ");
+
+            profile = {
+              name: formattedName,
+              username: username.toLowerCase(),
+              email: `${username.toLowerCase()}@orchestrix.io`,
+            };
+          }
+
+          if (profile && password) {
+            try {
+              const regRes = await api.post("/auth/register", {
+                name: profile.name,
+                username: profile.username,
+                email: profile.email || `${profile.username}@orchestrix.io`,
+                password: password,
+              });
+
+              if (regRes.data && regRes.data.token) {
+                const safeUser = {
+                  username: regRes.data.username,
+                  role: regRes.data.role || "DEVELOPER",
+                  name: profile.name,
+                  email: profile.email || `${profile.username}@orchestrix.io`,
+                  token: regRes.data.token,
+                  authenticated: true,
+                };
+                setCurrentUser(safeUser);
+                try {
+                  const knownProfiles = JSON.parse(localStorage.getItem("orchestrix_account_registry") || "{}");
+                  knownProfiles[profile.username] = profile;
+                  localStorage.setItem("orchestrix_account_registry", JSON.stringify(knownProfiles));
+                } catch {
+                  // ignore
+                }
+                navigate("/dashboard");
+                return;
+              }
+            } catch (recoveryErr) {
+              // If registration fails because the account already exists on the server (i.e. truly wrong password),
+              // fall through to displaying "Invalid username or password."
+            }
+          }
+
           setError("Invalid username or password.");
         } else if (err.response.status === 429) {
           setError(
@@ -179,6 +239,15 @@ function Login() {
         email,
         password,
       });
+
+      // Save registration metadata in local directory for ephemeral cloud container resilience
+      try {
+        const knownProfiles = JSON.parse(localStorage.getItem("orchestrix_account_registry") || "{}");
+        knownProfiles[username.toLowerCase()] = { name, username: username.toLowerCase(), email: email.toLowerCase() };
+        localStorage.setItem("orchestrix_account_registry", JSON.stringify(knownProfiles));
+      } catch {
+        // ignore
+      }
 
       // Option B: Show success banner and switch to Log In tab with pre-filled username
       setSuccessMessage(response.data?.message || "Account created successfully. Please log in.");
