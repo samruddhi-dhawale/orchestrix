@@ -7,8 +7,8 @@ function Settings() {
   const navigate = useNavigate();
   const [user, setUser] = useState({
     username: "developer",
-    name: "Samruddhi D.",
-    role: "Lead DevOps Engineer",
+    name: "Developer",
+    role: "DevOps Engineer / Developer",
     email: "developer@orchestrix.io",
     organization: "Orchestrix Core Platform",
   });
@@ -18,7 +18,12 @@ function Settings() {
       const stored = localStorage.getItem("orchestrix_user");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.name) setUser(parsed);
+        if (parsed.name) {
+          if (parsed.name.includes("Lead")) {
+            parsed.name = "Developer";
+          }
+          setUser(parsed);
+        }
       }
     } catch {
       // fallback

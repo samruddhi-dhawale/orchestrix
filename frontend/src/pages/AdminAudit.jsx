@@ -398,7 +398,7 @@ function AdminAudit() {
               <tbody>
                 {(auditData.registeredUsers?.length > 0 ? auditData.registeredUsers : [
                   { username: "admin", name: "System Administrator", email: "admin@orchestrix.io", role: "ADMIN", lastLoginAt: "Recent", lastVisitedPath: "/dashboard" },
-                  { username: "developer", name: "Samruddhi D. (Lead Developer)", email: "developer@orchestrix.io", role: "DEVELOPER", lastLoginAt: "Recent", lastVisitedPath: "/dashboard" }
+                  { username: "developer", name: "Developer", email: "developer@orchestrix.io", role: "DEVELOPER", lastLoginAt: "Recent", lastVisitedPath: "/dashboard" }
                 ]).map((u) => (
                   <tr key={u.username}>
                     <td><strong>{u.username}</strong></td>

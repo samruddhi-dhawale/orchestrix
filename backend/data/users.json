@@ -10,10 +10,10 @@
 }, {
   "username" : "developer",
   "passwordHash" : "$2a$10$Ehoi3o9Fx5lorAFSmQaKJufmeXKZLziDnd9qEC7eNupIpBIcaBrym",
-  "name" : "Samruddhi D. (Lead Developer)",
+  "name" : "Developer",
   "email" : "developer@orchestrix.io",
   "role" : "DEVELOPER",
   "registeredAt" : "2026-10-04 17:55:59",
-  "lastLoginAt" : "2026-10-04 18:00:03",
+  "lastLoginAt" : "2026-10-04 19:14:25",
   "lastVisitedPath" : "/dashboard"
 } ]

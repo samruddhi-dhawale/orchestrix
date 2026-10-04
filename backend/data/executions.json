@@ -6,7 +6,7 @@
     "branch" : "release/v2.4",
     "environment" : "staging",
     "deploymentStrategy" : "ROLLING",
-    "initiatedBy" : "Samruddhi D. (Lead Developer)",
+    "initiatedBy" : "Developer",
     "initiatedRole" : "DEVELOPER"
   },
   "status" : "SUCCESS",
@@ -112,7 +112,7 @@
     "branch" : "feature/jwt-auth",
     "environment" : "development",
     "deploymentStrategy" : "BLUE_GREEN",
-    "initiatedBy" : "Samruddhi D. (Lead Developer)",
+    "initiatedBy" : "Developer",
     "initiatedRole" : "DEVELOPER"
   },
   "status" : "SUCCESS",
@@ -218,7 +218,7 @@
     "branch" : "main",
     "environment" : "production",
     "deploymentStrategy" : "BLUE_GREEN",
-    "initiatedBy" : "Samruddhi D. (Lead Developer)",
+    "initiatedBy" : "Developer",
     "initiatedRole" : "DEVELOPER"
   },
   "status" : "SUCCESS",

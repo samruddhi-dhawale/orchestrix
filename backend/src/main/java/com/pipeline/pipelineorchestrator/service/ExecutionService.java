@@ -152,7 +152,7 @@ public class ExecutionService {
                     now.minusHours(3),
                     7850L,
                     "BLUE_GREEN",
-                    "Samruddhi D. (Lead Developer)",
+                    "Developer",
                     "DEVELOPER"
             );
 
@@ -167,7 +167,7 @@ public class ExecutionService {
                     now.minusHours(6),
                     6420L,
                     "ROLLING",
-                    "Samruddhi D. (Lead Developer)",
+                    "Developer",
                     "DEVELOPER"
             );
 
@@ -182,7 +182,7 @@ public class ExecutionService {
                     now.minusDays(1),
                     5120L,
                     "BLUE_GREEN",
-                    "Samruddhi D. (Lead Developer)",
+                    "Developer",
                     "DEVELOPER"
             );
 
@@ -386,14 +386,14 @@ public class ExecutionService {
 
     private void seedExecution(String id, String comp, String sub, String branch, String env,
                               ExecutionStatus status, LocalDateTime start, long durationMs, String strategy) {
-        seedExecution(id, comp, sub, branch, env, status, start, durationMs, strategy, "Samruddhi D.", "DEVELOPER");
+        seedExecution(id, comp, sub, branch, env, status, start, durationMs, strategy, "Developer", "DEVELOPER");
     }
 
     private void seedExecution(String id, String comp, String sub, String branch, String env,
                               ExecutionStatus status, LocalDateTime start, long durationMs, String strategy,
                               String initiatedBy, String initiatedRole) {
         PipelineRequest req = new PipelineRequest(comp, sub, branch, env, strategy);
-        req.setInitiatedBy(initiatedBy != null ? initiatedBy : "Samruddhi D.");
+        req.setInitiatedBy(initiatedBy != null ? initiatedBy : "Developer");
         req.setInitiatedRole(initiatedRole != null ? initiatedRole : "DEVELOPER");
 
         PipelineExecution exec = new PipelineExecution(id, req);

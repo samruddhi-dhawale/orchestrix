@@ -7,7 +7,11 @@ import RunsTable from "../components/RunsTable";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const user = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
+  const rawUser = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
+  const user = {
+    ...rawUser,
+    name: rawUser.name && rawUser.name.includes("Lead") ? "Developer" : (rawUser.name || "Developer"),
+  };
   const isAdmin = user.role === "ADMIN";
 
   const [runs, setRuns] = useState(() => {

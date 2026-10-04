@@ -257,7 +257,7 @@ public class UserService {
             UserAccount dev = new UserAccount(
                     "developer",
                     devHash.trim(),
-                    "Samruddhi D. (Lead Developer)",
+                    "Developer",
                     "developer@orchestrix.io",
                     "DEVELOPER"
             );
@@ -268,7 +268,7 @@ public class UserService {
         persistUsers();
 
         // Record initial seed login audit
-        loginHistory.add(new LoginAuditEntry("developer", "Samruddhi D. (Lead Developer)", "DEVELOPER", "127.0.0.1 (Web Portal)", "LOGIN_SUCCESS"));
+        loginHistory.add(new LoginAuditEntry("developer", "Developer", "DEVELOPER", "127.0.0.1 (Web Portal)", "LOGIN_SUCCESS"));
         loginHistory.add(new LoginAuditEntry("admin", "System Administrator", "ADMIN", "127.0.0.1 (Cloud Console)", "LOGIN_SUCCESS"));
     }
 

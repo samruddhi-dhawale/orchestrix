@@ -7,7 +7,11 @@ import "./LaunchPipeline.css";
 
 function LaunchPipeline() {
   const navigate = useNavigate();
-  const user = getCurrentUser() || { role: "DEVELOPER", name: "Samruddhi D.", username: "developer" };
+  const rawUser = getCurrentUser() || { role: "DEVELOPER", name: "Developer", username: "developer" };
+  const user = {
+    ...rawUser,
+    name: rawUser.name && rawUser.name.includes("Lead") ? "Developer" : (rawUser.name || "Developer"),
+  };
   const isAdmin = user.role === "ADMIN";
 
   // Progressive dropdown selections
@@ -201,7 +205,7 @@ function LaunchPipeline() {
         branch: effectiveBranch,
         environment: environment,
         deploymentStrategy: strategy,
-        initiatedBy: user.name || user.username || "Samruddhi D.",
+        initiatedBy: user.name || user.username || "Developer",
         initiatedRole: user.role || "DEVELOPER",
       };
 

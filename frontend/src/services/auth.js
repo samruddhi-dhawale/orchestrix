@@ -6,7 +6,12 @@ export function getCurrentUser() {
   try {
     const raw = localStorage.getItem("orchestrix_user");
     if (raw) {
-      return JSON.parse(raw);
+      const user = JSON.parse(raw);
+      if (user && user.name && (user.name.includes("Lead Developer") || user.name.includes("(Lead Developer)"))) {
+        user.name = "Developer";
+        localStorage.setItem("orchestrix_user", JSON.stringify(user));
+      }
+      return user;
     }
   } catch {
     // fallback
@@ -18,6 +23,9 @@ export function setCurrentUser(user) {
   if (user) {
     // Ensure no raw passwords or sensitive credentials ever enter localStorage
     const { password, passwordHash, ...safeUser } = user;
+    if (safeUser.name && (safeUser.name.includes("Lead Developer") || safeUser.name.includes("(Lead Developer)"))) {
+      safeUser.name = "Developer";
+    }
     localStorage.setItem("orchestrix_user", JSON.stringify(safeUser));
   } else {
     localStorage.removeItem("orchestrix_user");

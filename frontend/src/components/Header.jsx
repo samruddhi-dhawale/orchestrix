@@ -3,7 +3,11 @@ import { getCurrentUser, logout } from "../services/auth";
 import "./Header.css";
 
 function Header({ onToggleMenu }) {
-  const user = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
+  const rawUser = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
+  const user = {
+    ...rawUser,
+    name: rawUser.name && rawUser.name.includes("Lead") ? "Developer" : (rawUser.name || "Developer"),
+  };
   const isAdmin = user.role === "ADMIN";
 
   return (
