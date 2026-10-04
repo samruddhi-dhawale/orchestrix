@@ -206,6 +206,7 @@ function LaunchPipeline() {
         environment: environment,
         deploymentStrategy: strategy,
         initiatedBy: user.name || user.username || "Developer",
+        initiatedUsername: user.username || "developer",
         initiatedRole: user.role || "DEVELOPER",
       };
 

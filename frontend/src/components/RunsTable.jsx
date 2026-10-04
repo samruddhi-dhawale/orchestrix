@@ -12,6 +12,7 @@ function RunsTable({ runs }) {
             <th>Component / Subcomponent</th>
             <th>Git Branch</th>
             <th>Environment</th>
+            <th>Deployed By</th>
             <th>Status</th>
             <th>Started At</th>
             <th>Duration</th>
@@ -47,6 +48,38 @@ function RunsTable({ runs }) {
                   <span style={{ textTransform: "capitalize" }}>
                     {r.pipelineRequest?.environment}
                   </span>
+                </td>
+                <td>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <div
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        backgroundColor: "#eff6ff",
+                        color: "#1d4ed8",
+                        border: "1px solid #bfdbfe",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {(r.pipelineRequest?.initiatedUsername || r.pipelineRequest?.initiatedBy || "D").charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
+                      <strong style={{ fontSize: 13, color: "var(--text)" }}>
+                        @{r.pipelineRequest?.initiatedUsername || (r.pipelineRequest?.initiatedBy ? r.pipelineRequest.initiatedBy.toLowerCase().replace(/\s+/g, "-") : "developer")}
+                      </strong>
+                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                        {r.pipelineRequest?.initiatedBy && r.pipelineRequest.initiatedBy !== r.pipelineRequest.initiatedUsername
+                          ? r.pipelineRequest.initiatedBy
+                          : (r.pipelineRequest?.initiatedRole || "DEVELOPER")}
+                      </span>
+                    </div>
+                  </div>
                 </td>
                 <td>
                   <span className={`badge ${statusClass(r.status)}`}>

@@ -7,7 +7,8 @@ public class PipelineRequest {
     private String branch;
     private String environment;
     private String deploymentStrategy = "BLUE_GREEN"; // BLUE_GREEN, ROLLING, CANARY
-    private String initiatedBy = "developer";
+    private String initiatedBy = "Developer";
+    private String initiatedUsername = "developer";
     private String initiatedRole = "DEVELOPER";
 
     public PipelineRequest() {
@@ -83,5 +84,19 @@ public class PipelineRequest {
 
     public void setInitiatedRole(String initiatedRole) {
         this.initiatedRole = initiatedRole;
+    }
+
+    public String getInitiatedUsername() {
+        if (initiatedUsername != null && !initiatedUsername.isBlank()) {
+            return initiatedUsername;
+        }
+        if (initiatedBy != null && !initiatedBy.isBlank()) {
+            return initiatedBy.toLowerCase().replaceAll("\\s+", "-");
+        }
+        return "developer";
+    }
+
+    public void setInitiatedUsername(String initiatedUsername) {
+        this.initiatedUsername = initiatedUsername;
     }
 }
