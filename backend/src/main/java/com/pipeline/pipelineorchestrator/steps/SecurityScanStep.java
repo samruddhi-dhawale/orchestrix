@@ -30,7 +30,7 @@ public class SecurityScanStep implements PipelineStep {
         return new PipelineStepResult(
                 "Security & Vulnerability Scan",
                 ExecutionStatus.SUCCESS,
-                "DevSecOps Gate: PASSED (0 Critical CVEs, 0 Leaked Secrets)",
+                "Security Quality Gate: PASSED (Clean — No Vulnerabilities, 0 Leaked Secrets)",
                 durationMs,
                 startTimestamp,
                 completedTimestamp

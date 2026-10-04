@@ -137,8 +137,8 @@ function Dashboard() {
             <ShieldCheck size={18} color="#0f7b4b" />
             <strong style={{ fontSize: 14 }}>DevSecOps Quality Gate</strong>
           </div>
-          <span style={{ fontSize: 12, color: "var(--muted)" }}>SAST & CVE Vulnerability Checks</span>
-          <span className="badge success" style={{ marginTop: 8 }}>Active Gate (0 CVEs)</span>
+          <span style={{ fontSize: 12, color: "var(--muted)" }}>Automated Security & Vulnerability Scans</span>
+          <span className="badge success" style={{ marginTop: 8 }}>Active Gate (Passed / Clean)</span>
         </div>
       </div>
 

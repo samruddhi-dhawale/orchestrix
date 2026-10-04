@@ -44,10 +44,14 @@ public class PipelineOrchestrator {
             int progress = (int) Math.round(((double) overallIndex / totalExpectedSteps) * 100);
             execution.setProgressPercentage(progress);
 
-            // Realistic simulation delay for live demo visibility
-            pause(1100);
+            long stepStart = System.currentTimeMillis();
+            // Realistic simulation delay for live stage execution (0.8s to 1.4s)
+            long stageDelay = 850 + (long) ((overallIndex * 190) % 550);
+            pause(stageDelay);
 
             PipelineStepResult result = stepExecutor.execute(step, context);
+            long stepElapsed = System.currentTimeMillis() - stepStart;
+            result.setDurationMs(stepElapsed);
             results.add(result);
             execution.setSteps(new ArrayList<>(results));
 
