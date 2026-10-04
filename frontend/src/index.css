@@ -1609,6 +1609,42 @@ textarea:focus {
   flex-shrink: 0;
 }
 
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.cloud-waking-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-top: 10px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.spinner-dot-blue {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(37, 99, 235, 0.3);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 /* Responsiveness across Mobile & Small Screens (<= 480px, down to 320px) */
 @media (max-width: 480px) {
   .login-wrapper {

@@ -38,6 +38,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [slowNotice, setSlowNotice] = useState(false);
 
   const clearFeedback = () => {
     setError("");
@@ -82,6 +83,10 @@ function Login() {
     }
 
     setLoading(true);
+    setSlowNotice(false);
+    const slowTimer = setTimeout(() => {
+      setSlowNotice(true);
+    }, 2500);
 
     try {
       const response = await api.post("/auth/login", {
@@ -113,6 +118,8 @@ function Login() {
         setError("Unable to reach the authentication service. Please check your network connection.");
       }
     } finally {
+      clearTimeout(slowTimer);
+      setSlowNotice(false);
       setLoading(false);
     }
   };
@@ -160,6 +167,10 @@ function Login() {
     }
 
     setLoading(true);
+    setSlowNotice(false);
+    const slowTimer = setTimeout(() => {
+      setSlowNotice(true);
+    }, 2500);
 
     try {
       const response = await api.post("/auth/register", {
@@ -186,6 +197,8 @@ function Login() {
         setError("Account registration failed. Please try again later.");
       }
     } finally {
+      clearTimeout(slowTimer);
+      setSlowNotice(false);
       setLoading(false);
     }
   };
@@ -204,6 +217,10 @@ function Login() {
     }
 
     setLoading(true);
+    setSlowNotice(false);
+    const slowTimer = setTimeout(() => {
+      setSlowNotice(true);
+    }, 2500);
 
     try {
       const response = await api.post("/auth/forgot-password", { email });
@@ -224,6 +241,8 @@ function Login() {
         setError("Unable to process password reset request. Please try again.");
       }
     } finally {
+      clearTimeout(slowTimer);
+      setSlowNotice(false);
       setLoading(false);
     }
   };
@@ -263,6 +282,10 @@ function Login() {
     }
 
     setLoading(true);
+    setSlowNotice(false);
+    const slowTimer = setTimeout(() => {
+      setSlowNotice(true);
+    }, 2500);
 
     try {
       const response = await api.post("/auth/reset-password", {
@@ -291,6 +314,8 @@ function Login() {
         setError("Password reset failed. The token may be expired or invalid.");
       }
     } finally {
+      clearTimeout(slowTimer);
+      setSlowNotice(false);
       setLoading(false);
     }
   };
@@ -418,6 +443,13 @@ function Login() {
                     <span>Log In →</span>
                   )}
                 </button>
+
+                {slowNotice && (
+                  <div className="cloud-waking-notice" role="status">
+                    <span className="spinner-dot-blue"></span>
+                    <span>Connecting to cloud backend (free tier initial boot can take ~25s)...</span>
+                  </div>
+                )}
               </form>
             )}
 
@@ -547,6 +579,13 @@ function Login() {
                     <span>Create Account</span>
                   )}
                 </button>
+
+                {slowNotice && (
+                  <div className="cloud-waking-notice" role="status">
+                    <span className="spinner-dot-blue"></span>
+                    <span>Connecting to cloud backend (free tier spin-up can take ~25s)...</span>
+                  </div>
+                )}
               </form>
             )}
           </>
@@ -596,6 +635,13 @@ function Login() {
                     <span>Send Reset Link</span>
                   )}
                 </button>
+
+                {slowNotice && (
+                  <div className="cloud-waking-notice" role="status">
+                    <span className="spinner-dot-blue"></span>
+                    <span>Connecting to cloud backend...</span>
+                  </div>
+                )}
 
                 <button
                   type="button"
@@ -696,6 +742,13 @@ function Login() {
                     <span>Update Password</span>
                   )}
                 </button>
+
+                {slowNotice && (
+                  <div className="cloud-waking-notice" role="status">
+                    <span className="spinner-dot-blue"></span>
+                    <span>Connecting to cloud backend...</span>
+                  </div>
+                )}
 
                 <button
                   type="button"
