@@ -325,3 +325,63 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* RESPONSIVE DESIGN FOR LAUNCH PIPELINE */
+@media (max-width: 650px) {
+  .progressive-form-card {
+    border-radius: 10px;
+  }
+
+  .form-card-title {
+    padding: 16px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .progressive-fields-stack {
+    padding: 18px 16px;
+    gap: 18px;
+  }
+
+  .review-summary-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .summary-field-name {
+    width: 40%;
+  }
+
+  .launch-action-bar {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .launch-pipeline-primary-btn {
+    width: 100%;
+    justify-content: center;
+    height: 44px;
+    font-size: 14px;
+  }
+
+  .clear-selection-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-left h2 {
+    font-size: 16px;
+  }
+
+  .progressive-fields-stack {
+    padding: 16px 12px;
+  }
+
+  .review-summary-table td {
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+}

@@ -1,14 +1,24 @@
-import { Cloud, ShieldCheck, User, LogOut } from "lucide-react";
+import { Cloud, ShieldCheck, User, LogOut, Menu } from "lucide-react";
 import { getCurrentUser, logout } from "../services/auth";
 import "./Header.css";
 
-function Header() {
+function Header({ onToggleMenu }) {
   const user = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
   const isAdmin = user.role === "ADMIN";
 
   return (
     <header className="app-header">
       <div className="header-left">
+        <button
+          type="button"
+          className="mobile-menu-btn"
+          onClick={onToggleMenu}
+          aria-label="Open navigation menu"
+          title="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+
         <div className="header-page-title">
           Orchestrix Platform
         </div>

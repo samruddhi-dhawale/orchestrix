@@ -1,9 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Play, GitFork, History, Settings, Cloud, LogOut, ShieldCheck, UserCheck } from "lucide-react";
+import { LayoutDashboard, Play, GitFork, History, Settings, Cloud, LogOut, ShieldCheck, UserCheck, X } from "lucide-react";
 import { getCurrentUser, logout } from "../services/auth";
 import "./Sidebar.css";
 
-function Sidebar() {
+function Sidebar({ isOpen = false, onClose }) {
   const navigate = useNavigate();
   const user = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
   const isAdmin = user.role === "ADMIN";
@@ -12,17 +12,32 @@ function Sidebar() {
     logout();
   };
 
+  const handleNavClick = () => {
+    if (onClose) onClose();
+  };
+
   return (
-    <aside className="app-sidebar">
+    <aside className={`app-sidebar ${isOpen ? "mobile-open" : ""}`}>
       <div className="sidebar-brand">
-        <div className="brand-mark">
-          O
+        <div className="brand-identity-group">
+          <div className="brand-mark">
+            O
+          </div>
+
+          <div className="brand-content">
+            <span className="brand-name">ORCHESTRIX</span>
+            <span className="brand-subtitle">DevOps Orchestration</span>
+          </div>
         </div>
 
-        <div className="brand-content">
-          <span className="brand-name">ORCHESTRIX</span>
-          <span className="brand-subtitle">DevOps Orchestration</span>
-        </div>
+        <button
+          type="button"
+          className="sidebar-mobile-close"
+          onClick={onClose}
+          aria-label="Close navigation sidebar"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       <nav className="sidebar-navigation">
@@ -31,6 +46,7 @@ function Sidebar() {
 
           <NavLink
             to="/dashboard"
+            onClick={handleNavClick}
             className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
           >
             <span className="navigation-icon"><LayoutDashboard size={18} /></span>
@@ -39,6 +55,7 @@ function Sidebar() {
 
           <NavLink
             to="/pipeline"
+            onClick={handleNavClick}
             className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
           >
             <span className="navigation-icon"><Play size={18} /></span>
@@ -47,6 +64,7 @@ function Sidebar() {
 
           <NavLink
             to="/pipelines"
+            onClick={handleNavClick}
             className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
           >
             <span className="navigation-icon"><GitFork size={18} /></span>
@@ -55,6 +73,7 @@ function Sidebar() {
 
           <NavLink
             to="/executions"
+            onClick={handleNavClick}
             className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
           >
             <span className="navigation-icon"><History size={18} /></span>
@@ -67,6 +86,7 @@ function Sidebar() {
 
           <NavLink
             to="/settings"
+            onClick={handleNavClick}
             className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
           >
             <span className="navigation-icon"><Settings size={18} /></span>
@@ -80,6 +100,7 @@ function Sidebar() {
 
             <NavLink
               to="/admin/audit"
+              onClick={handleNavClick}
               className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
             >
               <span className="navigation-icon"><ShieldCheck size={18} /></span>
