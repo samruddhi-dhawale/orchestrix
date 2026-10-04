@@ -22,7 +22,7 @@ function Header({ onToggleMenu }) {
         <div className="header-page-title">
           Orchestrix Platform
         </div>
-        <span className="header-subtitle-tag">Production CI/CD</span>
+        <span className="header-subtitle-tag">CI/CD Platform</span>
       </div>
 
       <div className="header-right">

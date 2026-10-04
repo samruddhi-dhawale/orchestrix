@@ -77,10 +77,9 @@ function Executions() {
               placeholder="Search by Execution ID, Component, or Branch..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="high-contrast-input"
-              style={{ paddingLeft: 36 }}
+              className="high-contrast-input execution-search-input"
             />
-            <Search size={16} style={{ position: "absolute", left: 12, top: 12, color: "var(--muted)" }} />
+            <Search size={16} className="execution-search-icon" />
           </div>
 
           <div>
