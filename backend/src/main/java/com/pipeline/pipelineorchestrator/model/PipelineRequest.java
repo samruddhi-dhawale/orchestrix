@@ -10,6 +10,8 @@ public class PipelineRequest {
     private String initiatedBy = "Developer";
     private String initiatedUsername = "developer";
     private String initiatedRole = "DEVELOPER";
+    private String variables;
+    private String workItemId;
 
     public PipelineRequest() {
     }
@@ -98,5 +100,21 @@ public class PipelineRequest {
 
     public void setInitiatedUsername(String initiatedUsername) {
         this.initiatedUsername = initiatedUsername;
+    }
+
+    public String getVariables() {
+        return variables;
+    }
+
+    public void setVariables(String variables) {
+        this.variables = variables;
+    }
+
+    public String getWorkItemId() {
+        return workItemId;
+    }
+
+    public void setWorkItemId(String workItemId) {
+        this.workItemId = workItemId;
     }
 }

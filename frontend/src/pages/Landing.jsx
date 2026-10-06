@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Landing.css";
 
-const STEPS = ["Checkout Source", "Build", "Test", "Security Scan", "Package", "Publish Artifact", "Azure Cloud Deployment"];
+const STEPS = ["Checkout Source", "Test", "Build", "Generate Artifact", "Azure Cloud Deployment"];
 const FEATURES = [
   ["Step-by-step results", "Every run reports each of the pipeline steps with its status, logs, and execution duration."],
   ["Clear failures", "When a step fails you see which one and why. The remaining steps stay unrun."],

@@ -21,6 +21,8 @@ function LaunchPipeline() {
   const [customBranch, setCustomBranch] = useState("");
   const [environment, setEnvironment] = useState("");
   const [strategy, setStrategy] = useState("BLUE_GREEN");
+  const [variables, setVariables] = useState("");
+  const [workItemId, setWorkItemId] = useState("");
 
   // Data lists
   const [components, setComponents] = useState([]);
@@ -155,6 +157,8 @@ function LaunchPipeline() {
     setBranch("");
     setCustomBranch("");
     setEnvironment("");
+    setVariables("");
+    setWorkItemId("");
     setStrategy("BLUE_GREEN");
     setErrorMsg("");
     setFieldErrors({});
@@ -201,6 +205,8 @@ function LaunchPipeline() {
         branch: effectiveBranch,
         environment: environment,
         deploymentStrategy: strategy,
+        variables: variables.trim(),
+        workItemId: workItemId.trim(),
         initiatedBy: user.name || user.username || "Developer",
         initiatedUsername: user.username || "developer",
         initiatedRole: user.role || "DEVELOPER",
@@ -254,7 +260,6 @@ function LaunchPipeline() {
       <div className="page-header">
         <div>
           <h1>Launch Pipeline</h1>
-          <p>Progressively configure parameters to trigger an automated CI/CD release workflow.</p>
         </div>
         {(component || subcomponent || branch || environment) && (
           <button type="button" className="secondary-button" onClick={handleReset}>
@@ -274,7 +279,7 @@ function LaunchPipeline() {
       <div className="progressive-form-card">
         <div className="form-card-title">
           <div className="title-left">
-            <h2>Pipeline Parameters</h2>
+            <h2>Deployment Configuration</h2>
             <p>Select options in sequence to configure your deployment pipeline.</p>
           </div>
           <span className="step-count-badge">
@@ -435,6 +440,52 @@ function LaunchPipeline() {
             </div>
           )}
 
+          {/* STEP 5: Execution Metadata - Variable & Work Item ID */}
+          {subcomponent && effectiveBranch && environment && (
+            <div className="progressive-field-group dynamic-fade-in">
+              <div className="field-meta">
+                <span className={`step-tag ${workItemId || variables ? "completed" : ""}`}>
+                  Step 5
+                </span>
+                <label>
+                  Work Item & Pipeline Variables
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label htmlFor="workitem-input" style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 6 }}>
+                    Work Item ID (Optional)
+                  </label>
+                  <input
+                    id="workitem-input"
+                    type="text"
+                    placeholder="e.g. JIO-1042 or WI-5820"
+                    value={workItemId}
+                    onChange={(e) => setWorkItemId(e.target.value)}
+                    className="progressive-input"
+                  />
+                  <span className="field-hint">Trace deployment to Jira or Azure Boards work item.</span>
+                </div>
+
+                <div>
+                  <label htmlFor="variables-input" style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 6 }}>
+                    Pipeline Variables (Optional)
+                  </label>
+                  <input
+                    id="variables-input"
+                    type="text"
+                    placeholder="e.g. APP_ENV=staging, DEBUG=false"
+                    value={variables}
+                    onChange={(e) => setVariables(e.target.value)}
+                    className="progressive-input"
+                  />
+                  <span className="field-hint">Custom environment flags or parameters for the run.</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Configuration Review Summary & Confirmation */}
           {component && subcomponent && effectiveBranch && environment && (
             <div className="progressive-review-card dynamic-fade-in">
@@ -464,6 +515,18 @@ function LaunchPipeline() {
                       </span>
                     </td>
                   </tr>
+                  {workItemId && (
+                    <tr>
+                      <td className="summary-field-name">Work Item ID:</td>
+                      <td className="summary-field-val"><strong>{workItemId}</strong></td>
+                    </tr>
+                  )}
+                  {variables && (
+                    <tr>
+                      <td className="summary-field-name">Pipeline Variables:</td>
+                      <td className="summary-field-val"><code className="sub-code">{variables}</code></td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
 

@@ -105,6 +105,8 @@ public class PipelineValidationAndExecutionTest {
         assertNotNull(execution);
         assertEquals(5, execution.getTotalStages());
         assertEquals("Checkout Source", execution.getStageNames().get(0));
+        assertEquals("Test", execution.getStageNames().get(1));
+        assertEquals("Build", execution.getStageNames().get(2));
         assertEquals("Generate Artifact", execution.getStageNames().get(3));
         assertEquals("Azure Cloud Deployment", execution.getStageNames().get(4));
 
@@ -130,6 +132,8 @@ public class PipelineValidationAndExecutionTest {
         assertNotNull(execution);
         assertEquals(5, execution.getTotalStages());
         assertEquals("Checkout Source", execution.getStageNames().get(0));
+        assertEquals("Test", execution.getStageNames().get(1));
+        assertEquals("Build", execution.getStageNames().get(2));
         assertEquals("Generate Artifact", execution.getStageNames().get(3));
         assertEquals("Azure Cloud Deployment", execution.getStageNames().get(4));
 

@@ -554,12 +554,10 @@ function CreatePipeline() {
                 <span className="preview-flow-label">Planned Execution Sequence:</span>
                 <div className="preview-sequence">
                   <span>1. Checkout Source</span> →
-                  <span>2. Maven Build</span> →
-                  <span>3. Tests</span> →
-                  <span>4. DevSecOps Security Scan</span> →
-                  <span>5. Package Artifact</span> →
-                  <span>6. JFrog Artifactory</span> →
-                  <span>7. Azure Deploy</span>
+                  <span>2. Unit & Integration Tests</span> →
+                  <span>3. Maven Build</span> →
+                  <span>4. Generate Artifact</span> →
+                  <span>5. Azure Cloud Deployment</span>
                 </div>
               </div>
             </div>

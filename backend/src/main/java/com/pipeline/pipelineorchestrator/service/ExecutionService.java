@@ -224,8 +224,8 @@ public class ExecutionService {
         int totalStages = 5;
         List<String> stageNames = List.of(
                 "Checkout Source",
-                "Build",
                 "Test",
+                "Build",
                 "Generate Artifact",
                 "Azure Cloud Deployment"
         );
@@ -238,8 +238,8 @@ public class ExecutionService {
 
         List<PipelineStep> allSteps = List.of(
                 new CheckoutSourceStep(),
-                new BuildStep(),
                 new TestStep(),
+                new BuildStep(),
                 new GenerateArtifactStep(artifactPublisher),
                 new AzureDeploymentStep()
         );
@@ -365,21 +365,21 @@ public class ExecutionService {
         exec.setTotalStages(5);
         exec.setStageNames(List.of(
                 "Checkout Source",
-                "Build",
                 "Test",
+                "Build",
                 "Generate Artifact",
                 "Azure Cloud Deployment"
         ));
         exec.setProgressPercentage(status == ExecutionStatus.SUCCESS ? 100 : 50);
-        exec.setCurrentStepIndex(status == ExecutionStatus.SUCCESS ? 5 : 3);
-        exec.setCurrentStepName(status == ExecutionStatus.SUCCESS ? "Completed" : "Test");
+        exec.setCurrentStepIndex(status == ExecutionStatus.SUCCESS ? 5 : 2);
+        exec.setCurrentStepName(status == ExecutionStatus.SUCCESS ? "Completed" : "Build");
 
         List<PipelineStepResult> stepResults = new ArrayList<>();
         stepResults.add(new PipelineStepResult("Checkout Source", ExecutionStatus.SUCCESS, "Source checkout completed for branch '" + branch + "'", 1040, "10:00:01", "10:00:02"));
-        stepResults.add(new PipelineStepResult("Build", ExecutionStatus.SUCCESS, "Maven compilation completed successfully", 1450, "10:00:02", "10:00:04"));
+        stepResults.add(new PipelineStepResult("Test", ExecutionStatus.SUCCESS, "All 64 tests passed (93.8% coverage)", 1180, "10:00:02", "10:00:03"));
 
         if (status == ExecutionStatus.SUCCESS) {
-            stepResults.add(new PipelineStepResult("Test", ExecutionStatus.SUCCESS, "All 64 tests passed (93.8% coverage)", 1180, "10:00:04", "10:00:05"));
+            stepResults.add(new PipelineStepResult("Build", ExecutionStatus.SUCCESS, "Maven compilation completed successfully", 1450, "10:00:03", "10:00:05"));
             stepResults.add(new PipelineStepResult("Generate Artifact", ExecutionStatus.SUCCESS, "Artifact successfully generated: orchestrix-" + sub + "-1.0.0.jar", 1120, "10:00:05", "10:00:06"));
             stepResults.add(new PipelineStepResult("Azure Cloud Deployment", ExecutionStatus.SUCCESS, "Deployed via " + strategy + " to Azure App Service in " + env, 1320, "10:00:06", "10:00:07"));
 

@@ -181,8 +181,8 @@ function Execution() {
       ? execution.stageNames
       : [
           "Checkout Source",
-          "Build",
           "Test",
+          "Build",
           "Generate Artifact",
           "Azure Cloud Deployment",
         ];
@@ -441,22 +441,6 @@ function Execution() {
           <TerminalIcon size={16} />
           <span>Real-Time Logs ({execution.logs?.length || 0})</span>
         </button>
-
-        <button
-          className={`tab-btn ${activeTab === "artifact" ? "active" : ""}`}
-          onClick={() => setActiveTab("artifact")}
-        >
-          <Package size={16} />
-          <span>Generate Artifact {execution.artifact ? "✓" : ""}</span>
-        </button>
-
-        <button
-          className={`tab-btn ${activeTab === "azure" ? "active" : ""}`}
-          onClick={() => setActiveTab("azure")}
-        >
-          <Cloud size={16} />
-          <span>Azure Deployment {execution.deployment ? "✓" : ""}</span>
-        </button>
       </div>
 
       {/* TAB 1: Pipeline Flow */}
@@ -611,26 +595,14 @@ function Execution() {
                 </div>
 
                 <div className="completion-actions-group">
-                  {isSuccess ? (
-                    <button
-                      type="button"
-                      className="primary-button"
-                      onClick={() => setActiveTab("azure")}
-                    >
-                      <Cloud size={14} />
-                      <span>View Azure Deployment</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="primary-button"
-                      style={{ background: "var(--bad)", borderColor: "var(--bad)" }}
-                      onClick={() => setActiveTab("logs")}
-                    >
-                      <TerminalIcon size={14} />
-                      <span>View Error Logs</span>
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={() => setActiveTab("logs")}
+                  >
+                    <TerminalIcon size={14} />
+                    <span>View Real-Time Logs</span>
+                  </button>
                   <button
                     type="button"
                     className="secondary-button"
@@ -730,154 +702,6 @@ function Execution() {
         </div>
       )}
 
-      {/* TAB 3: Artifact & JFrog Artifactory Details */}
-      {activeTab === "artifact" && (
-        <div className="artifact-container">
-          {execution.artifact ? (
-            <div className="artifact-details-card">
-              <div className="artifact-card-head">
-                <div className="artifact-badge-title">
-                  <Package size={22} className="card-primary-icon" />
-                  <div>
-                    <h2>Generated Artifact</h2>
-                    <p>Verified build output generated for deployment.</p>
-                  </div>
-                </div>
-                <span className="badge success">Generated ✓</span>
-              </div>
-
-              <div className="artifact-grid">
-                <div className="artifact-info-box">
-                  <span className="info-label">Artifact Name</span>
-                  <strong>{execution.artifact.name}</strong>
-                </div>
-
-                <div className="artifact-info-box">
-                  <span className="info-label">Packaging Type</span>
-                  <strong className="mono">{execution.artifact.packaging}</strong>
-                </div>
-
-                <div className="artifact-info-box">
-                  <span className="info-label">Version</span>
-                  <strong>v{execution.artifact.version}</strong>
-                </div>
-
-                <div className="artifact-info-box">
-                  <span className="info-label">Package Size</span>
-                  <strong>{execution.artifact.size}</strong>
-                </div>
-
-                <div className="artifact-info-box full-span">
-                  <span className="info-label">Artifact Repository</span>
-                  <code className="repo-url">{execution.artifact.repositoryUrl}</code>
-                </div>
-
-                <div className="artifact-info-box full-span">
-                  <span className="info-label">SHA-256 Checksum Digest</span>
-                  <code className="checksum">{execution.artifact.checksumSha256}</code>
-                </div>
-              </div>
-
-              <div className="artifact-card-footer">
-                <span>Repository: libs-release-local</span>
-                <span className="footer-status-pill">Integrity Verified (SHA256 Match)</span>
-              </div>
-            </div>
-          ) : (
-            <div className="empty-tab-state">
-              <Package size={40} className="empty-icon" />
-              <h3>Artifact Not Yet Generated</h3>
-              <p>The artifact generation step runs during Stage 4.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 4: Azure Cloud Deployment Status */}
-      {activeTab === "azure" && (
-        <div className="azure-container">
-          {execution.deployment ? (
-            <div className="azure-details-card">
-              <div className="azure-card-head">
-                <div className="azure-badge-title">
-                  <Cloud size={24} className="azure-primary-icon" />
-                  <div>
-                    <h2>Microsoft Azure Cloud Deployment</h2>
-                    <p>Target App Service provisioned via {execution.deployment.strategy || "BLUE_GREEN"} strategy.</p>
-                  </div>
-                </div>
-                <span className="badge success">Azure Healthy (200 OK) ✓</span>
-              </div>
-
-              <div className="azure-grid">
-                <div className="azure-box">
-                  <span className="info-label">Environment</span>
-                  <strong style={{ textTransform: "capitalize" }}>
-                    {execution.deployment.environment}
-                  </strong>
-                </div>
-
-                <div className="azure-box">
-                  <span className="info-label">Deployment Strategy</span>
-                  <strong style={{ color: "#0078d4" }}>
-                    {execution.deployment.strategy === "BLUE_GREEN" ? "Blue/Green (Zero-Downtime Slot Swap)" : execution.deployment.strategy}
-                  </strong>
-                </div>
-
-                <div className="azure-box">
-                  <span className="info-label">Active Azure Slot</span>
-                  <strong className="mono">{execution.deployment.slot || "production"}</strong>
-                </div>
-
-                <div className="azure-box">
-                  <span className="info-label">Resource Group</span>
-                  <code className="azure-code">{execution.deployment.resourceGroup}</code>
-                </div>
-
-                <div className="azure-box full-span">
-                  <span className="info-label">Live Cloud Application URL</span>
-                  <div className="live-url-row">
-                    <a
-                      href={execution.deployment.liveUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="azure-live-link"
-                    >
-                      {execution.deployment.liveUrl}
-                      <ExternalLink size={14} style={{ marginLeft: 6 }} />
-                    </a>
-                  </div>
-                </div>
-
-                <div className="azure-box full-span">
-                  <span className="info-label">Azure Actuator Health Check Probe</span>
-                  <div className="probe-box">
-                    <span className="probe-dot"></span>
-                    <span>Status: {execution.deployment.healthStatus}</span>
-                    <span className="probe-url mono">{execution.deployment.healthCheckUrl}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="azure-card-footer">
-                <span>Authorized by: {execution.deployment.approvedBy || "Admin"}</span>
-                <span className="footer-status-pill">Routing & SSL Active</span>
-              </div>
-            </div>
-          ) : (
-            <div className="empty-tab-state">
-              <Cloud size={40} className="empty-icon" />
-              <h3>Azure Deployment In Progress</h3>
-              <p>
-                {isWaitingApproval
-                  ? "Deployment paused at Production Approval Gate. Administrator sign-off required."
-                  : `Cloud deployment executes in Stage ${totalStages} after artifact generation.`}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Pop-up Modal for Pipeline Deployment Result */}
       {showResultModal && isComplete && (
         <div className="pipeline-modal-backdrop dynamic-fade-in" onClick={() => setShowResultModal(false)}>
@@ -936,11 +760,11 @@ function Execution() {
                   className="modal-btn modal-btn-azure"
                   onClick={() => {
                     setShowResultModal(false);
-                    setActiveTab("azure");
+                    setActiveTab("logs");
                   }}
                 >
-                  <Cloud size={16} />
-                  <span>View Azure Deployment</span>
+                  <TerminalIcon size={16} />
+                  <span>View Real-Time Logs</span>
                 </button>
               ) : (
                 <button
