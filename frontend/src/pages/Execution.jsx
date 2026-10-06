@@ -20,7 +20,8 @@ import {
   Search,
   Download,
   AlertTriangle,
-  Play
+  Play,
+  RotateCcw
 } from "lucide-react";
 import api from "../services/api";
 import { formatTime, duration, statusClass } from "../services/format";
@@ -552,51 +553,90 @@ function Execution() {
               })}
             </div>
 
-            {/* Completion Result Message Card right after all stages */}
+            {/* Enterprise Deployment Status Card right after all stages */}
             {isComplete && (
-              <div className={`pipeline-completion-banner ${isSuccess ? "success" : "failed"} dynamic-fade-in`}>
-                <div className="completion-icon-wrapper">
-                  {isSuccess ? <CheckCircle2 size={32} /> : <AlertCircle size={32} />}
-                </div>
-                <div className="completion-text-wrap">
-                  <h4>{isSuccess ? "🎉 Pipeline Deployment Successful!" : "❌ Pipeline Deployment Failed!"}</h4>
-                  <p>
-                    {isSuccess
-                      ? `All ${totalStages} pipeline stages executed successfully. The application artifact was generated and deployed to Microsoft Azure.`
-                      : `Pipeline execution halted due to errors. Deployment to Microsoft Azure was aborted. Review logs for details.`}
-                  </p>
-                  <div className="completion-meta-tags">
-                    <span className="meta-tag"><strong>Target:</strong> Azure ({execution.pipelineRequest?.environment || "staging"})</span>
-                    <span className="meta-tag"><strong>Component:</strong> {execution.pipelineRequest?.componentId || "Core"}</span>
-                    {execution.totalDurationMs && (
-                      <span className="meta-tag"><strong>Duration:</strong> {(execution.totalDurationMs / 1000).toFixed(1)}s</span>
-                    )}
+              <div className={`pipeline-completion-card ${isSuccess ? "success" : "failed"} dynamic-fade-in`}>
+                <div className="completion-card-main">
+                  <div className="completion-status-icon">
+                    {isSuccess ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+                  </div>
+                  <div className="completion-body">
+                    <div className="completion-header-row">
+                      <h4 className="completion-title">
+                        {isSuccess ? "Pipeline Deployment Succeeded" : "Pipeline Deployment Failed"}
+                      </h4>
+                      <span className={`badge ${isSuccess ? "success" : "failed"}`}>
+                        {isSuccess ? "ACTIVE (200 OK)" : "FAILED"}
+                      </span>
+                      {execution.totalDurationMs && (
+                        <span className="completion-duration-badge">
+                          <Clock size={11} style={{ marginRight: 4 }} />
+                          {(execution.totalDurationMs / 1000).toFixed(1)}s
+                        </span>
+                      )}
+                    </div>
+                    <p className="completion-description">
+                      {isSuccess
+                        ? `All ${totalStages} stages completed cleanly. Deployment artifact verified and provisioned to Microsoft Azure App Service.`
+                        : `Pipeline execution halted due to errors. Cloud deployment was aborted. Inspect the logs for troubleshooting.`}
+                    </p>
+
+                    <div className="completion-telemetry-row">
+                      <div className="telemetry-item">
+                        <span className="telemetry-label">Target Cloud</span>
+                        <span className="telemetry-value">Microsoft Azure</span>
+                      </div>
+                      <div className="telemetry-item">
+                        <span className="telemetry-label">Environment</span>
+                        <span className="telemetry-value" style={{ textTransform: "capitalize" }}>
+                          {execution.pipelineRequest?.environment || "Staging"}
+                        </span>
+                      </div>
+                      <div className="telemetry-item">
+                        <span className="telemetry-label">Component</span>
+                        <span className="telemetry-value mono">
+                          {execution.pipelineRequest?.componentId}
+                          {execution.pipelineRequest?.subcomponentId && ` / ${execution.pipelineRequest.subcomponentId}`}
+                        </span>
+                      </div>
+                      {execution.artifact?.name && (
+                        <div className="telemetry-item">
+                          <span className="telemetry-label">Artifact</span>
+                          <span className="telemetry-value mono">{execution.artifact.name}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="completion-action-buttons">
+
+                <div className="completion-actions-group">
                   {isSuccess ? (
                     <button
                       type="button"
-                      className="completion-btn primary"
+                      className="primary-button"
                       onClick={() => setActiveTab("azure")}
                     >
-                      View Azure Deployment →
+                      <Cloud size={14} />
+                      <span>View Azure Deployment</span>
                     </button>
                   ) : (
                     <button
                       type="button"
-                      className="completion-btn primary failed"
+                      className="primary-button"
+                      style={{ background: "var(--bad)", borderColor: "var(--bad)" }}
                       onClick={() => setActiveTab("logs")}
                     >
-                      View Error Logs →
+                      <TerminalIcon size={14} />
+                      <span>View Error Logs</span>
                     </button>
                   )}
                   <button
                     type="button"
-                    className="completion-btn secondary"
+                    className="secondary-button"
                     onClick={() => navigate("/pipeline")}
                   >
-                    Launch New Run
+                    <RotateCcw size={14} />
+                    <span>Launch New Run</span>
                   </button>
                 </div>
               </div>
@@ -856,31 +896,31 @@ function Execution() {
             </div>
 
             <h2 className="modal-title">
-              {isSuccess ? "Pipeline Deployment Successful!" : "Pipeline Deployment Failed!"}
+              {isSuccess ? "Pipeline Deployment Succeeded" : "Pipeline Deployment Failed"}
             </h2>
 
             <p className="modal-description">
               {isSuccess
-                ? `All ${totalStages} stages executed successfully! The application was built, verified, and deployed to Microsoft Azure.`
-                : `The pipeline run failed during execution. One or more stages encountered errors and deployment could not proceed.`}
+                ? `All ${totalStages} stages completed cleanly. Deployment artifact verified and routed to Microsoft Azure App Service.`
+                : `Execution was halted due to step failure. Downstream cloud deployment was aborted.`}
             </p>
 
             <div className="modal-details-grid">
               <div className="modal-detail-item">
                 <span className="modal-detail-label">Status</span>
                 <span className={`modal-detail-badge ${isSuccess ? "success" : "failed"}`}>
-                  {isSuccess ? "SUCCESS (200 OK)" : "FAILED"}
+                  {isSuccess ? "ACTIVE (200 OK)" : "FAILED"}
                 </span>
               </div>
               <div className="modal-detail-item">
                 <span className="modal-detail-label">Environment</span>
                 <strong style={{ textTransform: "capitalize" }}>
-                  {execution.pipelineRequest?.environment || "staging"}
+                  {execution.pipelineRequest?.environment || "Staging"}
                 </strong>
               </div>
               <div className="modal-detail-item">
-                <span className="modal-detail-label">Subcomponent</span>
-                <strong className="mono">{execution.pipelineRequest?.subcomponentId || "sub-a1"}</strong>
+                <span className="modal-detail-label">Component</span>
+                <strong className="mono">{execution.pipelineRequest?.componentId || "Core"}</strong>
               </div>
               <div className="modal-detail-item">
                 <span className="modal-detail-label">Completed Stages</span>
@@ -892,35 +932,37 @@ function Execution() {
               {isSuccess ? (
                 <button
                   type="button"
-                  className="modal-btn-primary success"
+                  className="primary-button modal-btn"
                   onClick={() => {
                     setShowResultModal(false);
                     setActiveTab("azure");
                   }}
                 >
-                  <Cloud size={16} />
+                  <Cloud size={15} />
                   <span>View Azure Deployment</span>
                 </button>
               ) : (
                 <button
                   type="button"
-                  className="modal-btn-primary failed"
+                  className="primary-button modal-btn"
+                  style={{ background: "var(--bad)", borderColor: "var(--bad)" }}
                   onClick={() => {
                     setShowResultModal(false);
                     setActiveTab("logs");
                   }}
                 >
-                  <TerminalIcon size={16} />
+                  <TerminalIcon size={15} />
                   <span>Inspect Error Logs</span>
                 </button>
               )}
 
               <button
                 type="button"
-                className="modal-btn-secondary"
+                className="secondary-button modal-btn"
                 onClick={() => navigate("/pipeline")}
               >
-                Launch New Pipeline
+                <RotateCcw size={14} />
+                <span>Launch New Run</span>
               </button>
             </div>
           </div>
