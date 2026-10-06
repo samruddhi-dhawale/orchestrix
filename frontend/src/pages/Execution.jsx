@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   CheckCircle2,
   Clock,
@@ -29,6 +29,7 @@ import "./Execution.css";
 
 function Execution() {
   const { executionId } = useParams();
+  const navigate = useNavigate();
   const user = getCurrentUser() || { role: "DEVELOPER", name: "Developer", username: "developer" };
   const isAdmin = user.role === "ADMIN";
 
@@ -37,6 +38,7 @@ function Execution() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("stages"); // "stages", "logs", "artifact", "azure"
   const [copiedLog, setCopiedLog] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   // Terminal log search and filtering
   const [logSearch, setLogSearch] = useState("");
@@ -44,6 +46,16 @@ function Execution() {
   const [isApproving, setIsApproving] = useState(false);
 
   const logsEndRef = useRef(null);
+
+  // Open modal popup when execution completes
+  useEffect(() => {
+    if (!loading && execution) {
+      const isDone = execution.status === "SUCCESS" || execution.status === "FAILED";
+      if (isDone) {
+        setShowResultModal(true);
+      }
+    }
+  }, [execution?.status, loading]);
 
   // Poll execution status while RUNNING, PENDING, or WAITING_FOR_APPROVAL
   useEffect(() => {
@@ -161,39 +173,43 @@ function Execution() {
     );
   }
 
-  // Dynamic DevSecOps pipeline stages (Starts at Checkout Source)
-  const isApprovalRequired =
-    (execution.pipelineRequest?.environment === "production" &&
-      execution.pipelineRequest?.initiatedRole !== "ADMIN") ||
-    execution.steps?.some((s) => s.stepName === "Production Approval") ||
-    execution.status === "WAITING_FOR_APPROVAL";
-
-  const pipelineStepNames =
+  // Pipeline stages: remove Security Scan and Package, rename Publish Artifact -> Generate Artifact
+  const rawStageNames =
     execution.stageNames && execution.stageNames.length > 0
       ? execution.stageNames
-      : isApprovalRequired
-      ? [
-          "Checkout Source",
-          "Build",
-          "Test",
-          "Security & Vulnerability Scan",
-          "Package",
-          "Publish Artifact",
-          "Production Approval",
-          "Azure Cloud Deployment",
-        ]
       : [
           "Checkout Source",
           "Build",
           "Test",
-          "Security & Vulnerability Scan",
-          "Package",
-          "Publish Artifact",
+          "Generate Artifact",
           "Azure Cloud Deployment",
         ];
 
-  const totalStages = execution.totalStages || pipelineStepNames.length;
-  const executedSteps = execution.steps || [];
+  const pipelineStepNames = rawStageNames
+    .filter((name) => name !== "Security & Vulnerability Scan" && name !== "Package" && name !== "Production Approval")
+    .map((name) => (name === "Publish Artifact" ? "Generate Artifact" : name));
+
+  const totalStages = pipelineStepNames.length;
+
+  const executedSteps = (execution.steps || [])
+    .filter(
+      (s) =>
+        s.stepName !== "Security & Vulnerability Scan" &&
+        s.stepName !== "Package" &&
+        s.stepName !== "Production Approval"
+    )
+    .map((s) =>
+      s.stepName === "Publish Artifact"
+        ? {
+            ...s,
+            stepName: "Generate Artifact",
+            message: s.message
+              ? s.message.replace(/Artifact successfully published to JFrog Artifactory.*/i, "Artifact successfully generated")
+              : "Artifact successfully generated",
+          }
+        : s
+    );
+
   const rawStatus = execution.status || "PENDING";
   const status = rawStatus === "WAITING_FOR_APPROVAL" ? "SUCCESS" : rawStatus;
   const isRunning = status === "RUNNING";
@@ -201,6 +217,7 @@ function Execution() {
   const isFailed = status === "FAILED";
   const isWaitingApproval = false;
   const isRejected = status === "REJECTED";
+  const isComplete = !isRunning && (isSuccess || isFailed || executedSteps.length >= totalStages);
 
   const successCount = executedSteps.filter((s) => s.status === "SUCCESS").length;
   const progressPercent =
@@ -356,9 +373,9 @@ function Execution() {
             </div>
             <span className="progress-subtext">
               {isSuccess
-                ? `All ${totalStages} DevSecOps stages passed`
+                ? `All ${totalStages} pipeline stages passed`
                 : isWaitingApproval
-                ? `Stage 7: Production Approval awaiting Admin sign-off`
+                ? `Production Approval awaiting Admin sign-off`
                 : isRunning
                 ? `Running stage ${Math.min(successCount + 1, totalStages)} of ${totalStages}`
                 : isFailed
@@ -384,16 +401,23 @@ function Execution() {
         </div>
 
         <div className="summary-stat-box">
-          <span className="summary-label">DevSecOps Scan</span>
+          <span className="summary-label">Artifact Status</span>
           <strong style={{ fontSize: 15, color: "var(--ok)" }}>
-            {executedSteps.some(s => s.stepName?.includes("Security")) ? "PASSED (Clean)" : "Pending"}
+            {execution.artifact || executedSteps.some((s) => s.stepName?.includes("Artifact"))
+              ? "GENERATED"
+              : "Pending"}
           </strong>
         </div>
 
         <div className="summary-stat-box">
           <span className="summary-label">Azure Deployment</span>
-          <strong style={{ fontSize: 15, color: execution.deployment ? "var(--ok)" : isWaitingApproval ? "#b45309" : "var(--muted)" }}>
-            {execution.deployment ? "DEPLOYED (200 OK)" : isWaitingApproval ? "Awaiting Sign-off" : "Deploying..."}
+          <strong
+            style={{
+              fontSize: 15,
+              color: execution.deployment || isSuccess ? "var(--ok)" : isFailed ? "var(--bad)" : "var(--muted)",
+            }}
+          >
+            {execution.deployment || isSuccess ? "DEPLOYED (200 OK)" : isFailed ? "FAILED" : "In Progress..."}
           </strong>
         </div>
       </div>
@@ -421,7 +445,7 @@ function Execution() {
           onClick={() => setActiveTab("artifact")}
         >
           <Package size={16} />
-          <span>Artifact & JFrog {execution.artifact ? "✓" : ""}</span>
+          <span>Generate Artifact {execution.artifact ? "✓" : ""}</span>
         </button>
 
         <button
@@ -438,7 +462,7 @@ function Execution() {
         <div className="stages-flow-container">
           <div className="stages-card">
             <div className="card-head-clean">
-              <h2>Automated DevSecOps Pipeline Stages</h2>
+              <h2>Automated Pipeline Stages</h2>
               <span className="step-count-pill">{executedSteps.length} of {totalStages} finished</span>
             </div>
 
@@ -500,7 +524,7 @@ function Execution() {
                               <Clock size={12} />
                               {executed?.durationMs && executed.durationMs > 100
                                 ? (executed.durationMs / 1000).toFixed(1) + "s"
-                                : ["1.0s", "1.4s", "1.1s", "1.2s", "1.1s", "0.9s", "1.5s"][index % 7]}
+                                : ["1.0s", "1.4s", "1.1s", "1.2s", "1.5s"][index % 5]}
                             </span>
                           )}
                           <span className={`stage-status-badge ${stepStateClass}`}>
@@ -517,7 +541,7 @@ function Execution() {
                       <p className="stage-description">
                         {executed?.message ||
                           (isStepPaused
-                            ? "Waiting for Administrator authorization before initiating Stage 8: Azure Cloud Deployment."
+                            ? "Waiting for Administrator authorization before initiating Azure Cloud Deployment."
                             : isCurrentlyRunning
                             ? "Executing orchestration commands..."
                             : "Waiting for preceding stage completion.")}
@@ -527,6 +551,56 @@ function Execution() {
                 );
               })}
             </div>
+
+            {/* Completion Result Message Card right after all stages */}
+            {isComplete && (
+              <div className={`pipeline-completion-banner ${isSuccess ? "success" : "failed"} dynamic-fade-in`}>
+                <div className="completion-icon-wrapper">
+                  {isSuccess ? <CheckCircle2 size={32} /> : <AlertCircle size={32} />}
+                </div>
+                <div className="completion-text-wrap">
+                  <h4>{isSuccess ? "🎉 Pipeline Deployment Successful!" : "❌ Pipeline Deployment Failed!"}</h4>
+                  <p>
+                    {isSuccess
+                      ? `All ${totalStages} pipeline stages executed successfully. The application artifact was generated and deployed to Microsoft Azure.`
+                      : `Pipeline execution halted due to errors. Deployment to Microsoft Azure was aborted. Review logs for details.`}
+                  </p>
+                  <div className="completion-meta-tags">
+                    <span className="meta-tag"><strong>Target:</strong> Azure ({execution.pipelineRequest?.environment || "staging"})</span>
+                    <span className="meta-tag"><strong>Component:</strong> {execution.pipelineRequest?.componentId || "Core"}</span>
+                    {execution.totalDurationMs && (
+                      <span className="meta-tag"><strong>Duration:</strong> {(execution.totalDurationMs / 1000).toFixed(1)}s</span>
+                    )}
+                  </div>
+                </div>
+                <div className="completion-action-buttons">
+                  {isSuccess ? (
+                    <button
+                      type="button"
+                      className="completion-btn primary"
+                      onClick={() => setActiveTab("azure")}
+                    >
+                      View Azure Deployment →
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="completion-btn primary failed"
+                      onClick={() => setActiveTab("logs")}
+                    >
+                      View Error Logs →
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="completion-btn secondary"
+                    onClick={() => navigate("/pipeline")}
+                  >
+                    Launch New Run
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -624,11 +698,11 @@ function Execution() {
                 <div className="artifact-badge-title">
                   <Package size={22} className="card-primary-icon" />
                   <div>
-                    <h2>Packaged Artifact & JFrog Publishing</h2>
-                    <p>Verified build output published to enterprise repository.</p>
+                    <h2>Generated Artifact</h2>
+                    <p>Verified build output generated for deployment.</p>
                   </div>
                 </div>
-                <span className="badge success">Published to JFrog ✓</span>
+                <span className="badge success">Generated ✓</span>
               </div>
 
               <div className="artifact-grid">
@@ -653,7 +727,7 @@ function Execution() {
                 </div>
 
                 <div className="artifact-info-box full-span">
-                  <span className="info-label">JFrog Artifactory Repository</span>
+                  <span className="info-label">Artifact Repository</span>
                   <code className="repo-url">{execution.artifact.repositoryUrl}</code>
                 </div>
 
@@ -664,7 +738,7 @@ function Execution() {
               </div>
 
               <div className="artifact-card-footer">
-                <span>Repository: JFrog Artifactory (libs-release-local)</span>
+                <span>Repository: libs-release-local</span>
                 <span className="footer-status-pill">Integrity Verified (SHA256 Match)</span>
               </div>
             </div>
@@ -672,7 +746,7 @@ function Execution() {
             <div className="empty-tab-state">
               <Package size={40} className="empty-icon" />
               <h3>Artifact Not Yet Generated</h3>
-              <p>The package and publish steps run during Stage 6 and 7.</p>
+              <p>The artifact generation step runs during Stage 4.</p>
             </div>
           )}
         </div>
@@ -755,11 +829,101 @@ function Execution() {
               <h3>Azure Deployment In Progress</h3>
               <p>
                 {isWaitingApproval
-                  ? "Deployment paused at Stage 7 (Production Approval Gate). Administrator sign-off required."
-                  : `Cloud deployment executes in Stage ${totalStages} after JFrog artifact publishing.`}
+                  ? "Deployment paused at Production Approval Gate. Administrator sign-off required."
+                  : `Cloud deployment executes in Stage ${totalStages} after artifact generation.`}
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Pop-up Modal for Pipeline Deployment Result */}
+      {showResultModal && isComplete && (
+        <div className="pipeline-modal-backdrop dynamic-fade-in" onClick={() => setShowResultModal(false)}>
+          <div className="pipeline-modal-card dynamic-scale-in" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setShowResultModal(false)}
+              aria-label="Close modal"
+              title="Close modal"
+            >
+              ✕
+            </button>
+
+            <div className={`modal-status-icon-circle ${isSuccess ? "success" : "failed"}`}>
+              {isSuccess ? <CheckCircle2 size={44} /> : <AlertCircle size={44} />}
+            </div>
+
+            <h2 className="modal-title">
+              {isSuccess ? "Pipeline Deployment Successful!" : "Pipeline Deployment Failed!"}
+            </h2>
+
+            <p className="modal-description">
+              {isSuccess
+                ? `All ${totalStages} stages executed successfully! The application was built, verified, and deployed to Microsoft Azure.`
+                : `The pipeline run failed during execution. One or more stages encountered errors and deployment could not proceed.`}
+            </p>
+
+            <div className="modal-details-grid">
+              <div className="modal-detail-item">
+                <span className="modal-detail-label">Status</span>
+                <span className={`modal-detail-badge ${isSuccess ? "success" : "failed"}`}>
+                  {isSuccess ? "SUCCESS (200 OK)" : "FAILED"}
+                </span>
+              </div>
+              <div className="modal-detail-item">
+                <span className="modal-detail-label">Environment</span>
+                <strong style={{ textTransform: "capitalize" }}>
+                  {execution.pipelineRequest?.environment || "staging"}
+                </strong>
+              </div>
+              <div className="modal-detail-item">
+                <span className="modal-detail-label">Subcomponent</span>
+                <strong className="mono">{execution.pipelineRequest?.subcomponentId || "sub-a1"}</strong>
+              </div>
+              <div className="modal-detail-item">
+                <span className="modal-detail-label">Completed Stages</span>
+                <strong>{successCount} of {totalStages}</strong>
+              </div>
+            </div>
+
+            <div className="modal-actions-row">
+              {isSuccess ? (
+                <button
+                  type="button"
+                  className="modal-btn-primary success"
+                  onClick={() => {
+                    setShowResultModal(false);
+                    setActiveTab("azure");
+                  }}
+                >
+                  <Cloud size={16} />
+                  <span>View Azure Deployment</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="modal-btn-primary failed"
+                  onClick={() => {
+                    setShowResultModal(false);
+                    setActiveTab("logs");
+                  }}
+                >
+                  <TerminalIcon size={16} />
+                  <span>Inspect Error Logs</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                className="modal-btn-secondary"
+                onClick={() => navigate("/pipeline")}
+              >
+                Launch New Pipeline
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

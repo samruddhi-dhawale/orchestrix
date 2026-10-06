@@ -39,6 +39,7 @@ import com.pipeline.pipelineorchestrator.orchestrator.PipelineStep;
 import com.pipeline.pipelineorchestrator.steps.AzureDeploymentStep;
 import com.pipeline.pipelineorchestrator.steps.BuildStep;
 import com.pipeline.pipelineorchestrator.steps.CheckoutSourceStep;
+import com.pipeline.pipelineorchestrator.steps.GenerateArtifactStep;
 import com.pipeline.pipelineorchestrator.steps.PackageStep;
 import com.pipeline.pipelineorchestrator.steps.PublishArtifactStep;
 import com.pipeline.pipelineorchestrator.steps.SecurityScanStep;
@@ -220,14 +221,12 @@ public class ExecutionService {
         execution.setStartedAt(LocalDateTime.now());
         execution.addLog("INFO", "Init", "Pipeline request accepted. Strategy: " + request.getDeploymentStrategy() + " | Triggered by: " + request.getInitiatedBy());
 
-        int totalStages = 7;
+        int totalStages = 5;
         List<String> stageNames = List.of(
                 "Checkout Source",
                 "Build",
                 "Test",
-                "Security & Vulnerability Scan",
-                "Package",
-                "Publish Artifact",
+                "Generate Artifact",
                 "Azure Cloud Deployment"
         );
 
@@ -241,9 +240,7 @@ public class ExecutionService {
                 new CheckoutSourceStep(),
                 new BuildStep(),
                 new TestStep(),
-                new SecurityScanStep(),
-                new PackageStep(),
-                new PublishArtifactStep(artifactPublisher),
+                new GenerateArtifactStep(artifactPublisher),
                 new AzureDeploymentStep()
         );
 
@@ -365,18 +362,16 @@ public class ExecutionService {
         exec.setStartedAt(start);
         exec.setCompletedAt(start.plusNanos(durationMs * 1_000_000));
         exec.setTotalDurationMs(durationMs);
-        exec.setTotalStages(7);
+        exec.setTotalStages(5);
         exec.setStageNames(List.of(
                 "Checkout Source",
                 "Build",
                 "Test",
-                "Security & Vulnerability Scan",
-                "Package",
-                "Publish Artifact",
+                "Generate Artifact",
                 "Azure Cloud Deployment"
         ));
         exec.setProgressPercentage(status == ExecutionStatus.SUCCESS ? 100 : 50);
-        exec.setCurrentStepIndex(status == ExecutionStatus.SUCCESS ? 7 : 3);
+        exec.setCurrentStepIndex(status == ExecutionStatus.SUCCESS ? 5 : 3);
         exec.setCurrentStepName(status == ExecutionStatus.SUCCESS ? "Completed" : "Test");
 
         List<PipelineStepResult> stepResults = new ArrayList<>();
@@ -385,10 +380,8 @@ public class ExecutionService {
 
         if (status == ExecutionStatus.SUCCESS) {
             stepResults.add(new PipelineStepResult("Test", ExecutionStatus.SUCCESS, "All 64 tests passed (93.8% coverage)", 1180, "10:00:04", "10:00:05"));
-            stepResults.add(new PipelineStepResult("Security & Vulnerability Scan", ExecutionStatus.SUCCESS, "DevSecOps Gate: PASSED (0 Critical CVEs, 0 Leaked Secrets)", 920, "10:00:05", "10:00:06"));
-            stepResults.add(new PipelineStepResult("Package", ExecutionStatus.SUCCESS, "Packaged JAR artifact (orchestrix-" + sub + "-1.0.0.jar)", 980, "10:00:06", "10:00:07"));
-            stepResults.add(new PipelineStepResult("Publish Artifact", ExecutionStatus.SUCCESS, "Artifact successfully published to JFrog Artifactory", 1120, "10:00:07", "10:00:08"));
-            stepResults.add(new PipelineStepResult("Azure Cloud Deployment", ExecutionStatus.SUCCESS, "Deployed via " + strategy + " to Azure App Service in " + env, 1320, "10:00:08", "10:00:09"));
+            stepResults.add(new PipelineStepResult("Generate Artifact", ExecutionStatus.SUCCESS, "Artifact successfully generated: orchestrix-" + sub + "-1.0.0.jar", 1120, "10:00:05", "10:00:06"));
+            stepResults.add(new PipelineStepResult("Azure Cloud Deployment", ExecutionStatus.SUCCESS, "Deployed via " + strategy + " to Azure App Service in " + env, 1320, "10:00:06", "10:00:07"));
 
             exec.setArtifact(new ArtifactInfo(
                     "orchestrix-" + sub + "-1.0.0.jar",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Play, Cloud, Package, CheckCircle2, AlertTriangle, ArrowRight, Layers, Cpu, ShieldCheck, Clock, UserCheck, AlertCircle } from "lucide-react";
+import { Play, Cloud, Package, CheckCircle2, AlertTriangle, ArrowRight, Layers, Cpu, Clock, UserCheck, AlertCircle } from "lucide-react";
 import api from "../services/api";
 import { getCurrentUser } from "../services/auth";
 import { formatTime, statusClass } from "../services/format";
@@ -113,7 +113,7 @@ function Dashboard() {
       </section>
 
       {/* Cloud & Platform Status Grid */}
-      <div className="platform-integrations-bar" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+      <div className="platform-integrations-bar" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
         <div className="stat-card" style={{ padding: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
             <Cloud size={18} color="#0078d4" />
@@ -130,15 +130,6 @@ function Dashboard() {
           </div>
           <span style={{ fontSize: 12, color: "var(--muted)" }}>libs-release-local (SHA-256 Verified)</span>
           <span className="badge success" style={{ marginTop: 8 }}>Verified</span>
-        </div>
-
-        <div className="stat-card" style={{ padding: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <ShieldCheck size={18} color="#0f7b4b" />
-            <strong style={{ fontSize: 14 }}>DevSecOps Quality Gate</strong>
-          </div>
-          <span style={{ fontSize: 12, color: "var(--muted)" }}>Automated Security & Vulnerability Scans</span>
-          <span className="badge success" style={{ marginTop: 8 }}>Active Gate (Passed / Clean)</span>
         </div>
       </div>
 

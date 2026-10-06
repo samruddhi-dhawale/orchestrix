@@ -186,10 +186,6 @@ function LaunchPipeline() {
       errors.environment = "Please select a target deployment environment.";
     }
 
-    if (!strategy) {
-      errors.strategy = "Please select an Azure deployment strategy.";
-    }
-
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setErrorMsg("Configuration validation failed. Please address the highlighted fields below.");
@@ -245,18 +241,12 @@ function LaunchPipeline() {
   const compLabel = components.find((c) => c.id === component)?.name || component;
   const subLabel = subcomponents.find((s) => s.id === subcomponent)?.name || subcomponent;
 
-  const strategyNames = {
-    BLUE_GREEN: "Blue/Green (Zero-Downtime Slot Swap)",
-    CANARY: "Canary Release (10% Traffic Ramp)",
-    ROLLING: "Rolling Update (Cluster Node Rotation)",
-  };
 
   const completedStepsCount = [
     Boolean(component),
     Boolean(subcomponent),
     Boolean(effectiveBranch),
     Boolean(environment),
-    Boolean(strategy),
   ].filter(Boolean).length;
 
   return (
@@ -288,7 +278,7 @@ function LaunchPipeline() {
             <p>Select options in sequence to configure your deployment pipeline.</p>
           </div>
           <span className="step-count-badge">
-            {environment && strategy ? "Review Ready" : `Step ${[component, subcomponent, effectiveBranch, environment].filter(Boolean).length + 1} of 5`}
+            {environment ? "Review Ready" : `Step ${[component, subcomponent, effectiveBranch].filter(Boolean).length + 1} of 4`}
           </span>
         </div>
 
@@ -445,39 +435,8 @@ function LaunchPipeline() {
             </div>
           )}
 
-          {/* STEP 5: Azure Deployment Strategy (Appears ONLY after Environment is selected) */}
-          {subcomponent && effectiveBranch && environment && (
-            <div className="progressive-field-group dynamic-fade-in">
-              <div className="field-meta">
-                <span className={`step-tag ${strategy ? "completed" : ""}`}>
-                  {strategy ? "✓ Step 5" : "Step 5"}
-                </span>
-                <label htmlFor="strategy-select">
-                  Azure Deployment Strategy <span>*</span>
-                </label>
-              </div>
-
-              <select
-                id="strategy-select"
-                value={strategy}
-                onChange={(e) => {
-                  setStrategy(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, strategy: "" }));
-                }}
-                className="progressive-select"
-                required
-              >
-                <option value="BLUE_GREEN">Blue/Green Deployment (Zero-Downtime Azure Slot Swap - Recommended)</option>
-                <option value="CANARY">Canary Release (10% Traffic Ramp → 50% → 100%)</option>
-                <option value="ROLLING">Rolling Update (Incremental Node Rotation)</option>
-              </select>
-              {fieldErrors.strategy && <span className="field-error-text">{fieldErrors.strategy}</span>}
-              <span className="field-hint">Zero-downtime routing policy applied during Azure cloud provisioning.</span>
-            </div>
-          )}
-
           {/* Configuration Review Summary & Confirmation */}
-          {component && subcomponent && effectiveBranch && environment && strategy && (
+          {component && subcomponent && effectiveBranch && environment && (
             <div className="progressive-review-card dynamic-fade-in">
               <div className="review-title-row">
                 <div className="review-heading">
@@ -498,33 +457,11 @@ function LaunchPipeline() {
                     <td className="summary-field-val"><strong>{subLabel}</strong> <code className="sub-code">{subcomponent}</code></td>
                   </tr>
                   <tr>
-                    <td className="summary-field-name">Git Source Branch:</td>
-                    <td className="summary-field-val"><code className="branch-code">refs/heads/{effectiveBranch}</code></td>
-                  </tr>
-                  <tr>
                     <td className="summary-field-name">Deployment Environment:</td>
                     <td className="summary-field-val">
                       <span className={`badge ${environment === "production" ? "running" : "success"}`} style={{ textTransform: "capitalize" }}>
                         {environment}
                       </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="summary-field-name">Deployment Strategy:</td>
-                    <td className="summary-field-val"><strong>{strategyNames[strategy]}</strong></td>
-                  </tr>
-                  <tr>
-                    <td className="summary-field-name">DevSecOps Security Gate:</td>
-                    <td className="summary-field-val"><span className="badge success">Enabled (SAST & CVE Scan)</span></td>
-                  </tr>
-                  <tr>
-                    <td className="summary-field-name">Target Cloud Provider:</td>
-                    <td className="summary-field-val">Microsoft Azure App Service (rg-orchestrix-{environment})</td>
-                  </tr>
-                  <tr>
-                    <td className="summary-field-name">Operator Role:</td>
-                    <td className="summary-field-val">
-                      <strong>{user.name}</strong> ({isAdmin ? "👑 Administrator" : "💻 Developer"})
                     </td>
                   </tr>
                 </tbody>

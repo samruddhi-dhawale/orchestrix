@@ -103,16 +103,19 @@ public class PipelineValidationAndExecutionTest {
         PipelineExecution execution = executionService.executePipeline(req);
 
         assertNotNull(execution);
-        assertEquals(7, execution.getTotalStages());
+        assertEquals(5, execution.getTotalStages());
         assertEquals("Checkout Source", execution.getStageNames().get(0));
-        assertEquals("Azure Cloud Deployment", execution.getStageNames().get(6));
+        assertEquals("Generate Artifact", execution.getStageNames().get(3));
+        assertEquals("Azure Cloud Deployment", execution.getStageNames().get(4));
 
         // Ensure "Validate Configuration" is nowhere in the stage names
         assertFalse(execution.getStageNames().contains("Validate Configuration"));
+        assertFalse(execution.getStageNames().contains("Security & Vulnerability Scan"));
+        assertFalse(execution.getStageNames().contains("Package"));
     }
 
     @Test
-    void testProductionPipelineExecutionDirect7Stages() {
+    void testProductionPipelineExecutionDirect5Stages() {
         PipelineRequest req = new PipelineRequest();
         req.setComponentId("payment-gateway");
         req.setSubcomponentId("sub-pay-core");
@@ -125,12 +128,14 @@ public class PipelineValidationAndExecutionTest {
         PipelineExecution execution = executionService.executePipeline(req);
 
         assertNotNull(execution);
-        assertEquals(7, execution.getTotalStages());
+        assertEquals(5, execution.getTotalStages());
         assertEquals("Checkout Source", execution.getStageNames().get(0));
-        assertEquals("Publish Artifact", execution.getStageNames().get(5));
-        assertEquals("Azure Cloud Deployment", execution.getStageNames().get(6));
+        assertEquals("Generate Artifact", execution.getStageNames().get(3));
+        assertEquals("Azure Cloud Deployment", execution.getStageNames().get(4));
 
         assertFalse(execution.getStageNames().contains("Validate Configuration"));
         assertFalse(execution.getStageNames().contains("Production Approval"));
+        assertFalse(execution.getStageNames().contains("Security & Vulnerability Scan"));
+        assertFalse(execution.getStageNames().contains("Package"));
     }
 }
