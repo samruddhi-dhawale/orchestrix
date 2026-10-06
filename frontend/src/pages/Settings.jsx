@@ -157,7 +157,7 @@ function Settings() {
             <div style={{ fontSize: 12, display: "flex", flexDirection: "column", gap: 6 }}>
               <div><strong>Subscription:</strong> <code>orchestrix-demo-sub-01 (Azure Cloud Provider)</code></div>
               <div><strong>Target Resource Groups:</strong> <code>rg-orchestrix-[environment]</code></div>
-              <div><strong>Default Region:</strong> East US / East US 2 (High Availability Slot Pair)</div>
+              <div><strong>Default Region:</strong> Primary Cloud Region (High Availability Slot Pair)</div>
               <div><strong>App Service Plan:</strong> Standard S1 (Linux Container Runtime)</div>
             </div>
           </div>

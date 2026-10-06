@@ -447,7 +447,7 @@ function CreatePipeline() {
                   {environment === "development" && <CheckCircle2 size={18} className="check-icon" />}
                 </div>
                 <h3>Development Environment</h3>
-                <p className="card-desc">Target: Azure App Service (East US Dev Cluster)</p>
+                <p className="card-desc">Target: Azure App Service (Dev Cluster)</p>
                 <span className="azure-meta-tag">rg-orchestrix-development</span>
               </div>
 
@@ -460,7 +460,7 @@ function CreatePipeline() {
                   {environment === "staging" && <CheckCircle2 size={18} className="check-icon" />}
                 </div>
                 <h3>Staging (Pre-Prod)</h3>
-                <p className="card-desc">Target: Azure App Service (East US Staging Slot)</p>
+                <p className="card-desc">Target: Azure App Service (Staging Slot)</p>
                 <span className="azure-meta-tag">rg-orchestrix-staging</span>
               </div>
 
@@ -534,7 +534,7 @@ function CreatePipeline() {
                   <strong className="review-val" style={{ textTransform: "capitalize" }}>
                     {environment}
                   </strong>
-                  <span className="review-code">Azure Cloud (East US)</span>
+                  <span className="review-code">Azure Cloud</span>
                 </div>
 
                 <div className="review-item">

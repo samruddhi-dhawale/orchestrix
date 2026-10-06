@@ -32,7 +32,7 @@ function Header({ onToggleMenu }) {
       <div className="header-right">
         <div className="environment-badge">
           <Cloud size={14} style={{ marginRight: 6 }} color="#0078d4" />
-          <span>Azure Cloud (East US)</span>
+          <span>Azure Cloud</span>
         </div>
 
         <div className="header-divider"></div>

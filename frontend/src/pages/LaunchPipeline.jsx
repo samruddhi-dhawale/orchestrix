@@ -415,8 +415,8 @@ function LaunchPipeline() {
                 required
               >
                 <option value="">-- Select Deployment Environment --</option>
-                <option value="development">Development (Azure App Service - East US)</option>
-                <option value="staging">Testing / Staging (Azure App Service - East US Staging Slot)</option>
+                <option value="development">Development (Azure App Service)</option>
+                <option value="staging">Testing / Staging (Azure App Service - Staging Slot)</option>
                 <option value="production">Production (Azure App Service - High Availability Pair)</option>
               </select>
               {fieldErrors.environment && <span className="field-error-text">{fieldErrors.environment}</span>}

@@ -120,7 +120,7 @@ function Dashboard() {
             <strong style={{ fontSize: 14 }}>Microsoft Azure Cloud</strong>
           </div>
           <span style={{ fontSize: 12, color: "var(--muted)" }}>Blue/Green & Canary Slot Routing</span>
-          <span className="badge success" style={{ marginTop: 8 }}>Connected (East US)</span>
+          <span className="badge success" style={{ marginTop: 8 }}>Connected</span>
         </div>
 
         <div className="stat-card" style={{ padding: 16 }}>
