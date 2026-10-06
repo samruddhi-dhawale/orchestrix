@@ -181,7 +181,7 @@ function LaunchPipeline() {
     }
 
     if (!effectiveBranch) {
-      errors.branch = "Please select or enter a Git branch / tag.";
+      errors.branch = "Please select or enter a Git branch.";
     } else if (effectiveBranch.includes(" ") || effectiveBranch.includes("..")) {
       errors.branch = "Branch name cannot contain spaces or '..'";
     }
@@ -279,11 +279,11 @@ function LaunchPipeline() {
       <div className="progressive-form-card">
         <div className="form-card-title">
           <div className="title-left">
-            <h2>Deployment Configuration</h2>
+            <h2>Pipeline Setup</h2>
             <p>Select options in sequence to configure your deployment pipeline.</p>
           </div>
           <span className="step-count-badge">
-            {environment ? "Review Ready" : `Step ${[component, subcomponent, effectiveBranch].filter(Boolean).length + 1} of 4`}
+            {environment ? "Review Ready" : `Step ${!component ? 1 : !subcomponent ? 2 : !effectiveBranch ? 3 : 4} of 5`}
           </span>
         </div>
 
@@ -352,7 +352,7 @@ function LaunchPipeline() {
             </div>
           )}
 
-          {/* STEP 3: Git Branch / Tag Dropdown (Appears ONLY after Subcomponent is selected) */}
+          {/* STEP 3: Git Branch Dropdown (Appears ONLY after Subcomponent is selected) */}
           {subcomponent && (
             <div className="progressive-field-group dynamic-fade-in">
               <div className="field-meta">
@@ -360,7 +360,7 @@ function LaunchPipeline() {
                   {effectiveBranch ? "✓ Step 3" : "Step 3"}
                 </span>
                 <label htmlFor="branch-select">
-                  Git Branch / Tag <span>*</span>
+                  Git Branch <span>*</span>
                 </label>
               </div>
 
@@ -377,7 +377,7 @@ function LaunchPipeline() {
                 <option value="feature/login">feature/login (Feature Branch)</option>
                 <option value="release/v1.0">release/v1.0 (Release Candidate)</option>
                 <option value="feature/broken-test">feature/broken-test (Simulate Test Failure Demo)</option>
-                <option value="custom">Custom Branch / Tag Name...</option>
+                <option value="custom">Custom Branch Name...</option>
               </select>
 
               {branch === "custom" && (
@@ -396,56 +396,16 @@ function LaunchPipeline() {
                 </div>
               )}
               {fieldErrors.branch && <span className="field-error-text">{fieldErrors.branch}</span>}
-              <span className="field-hint">The source revision to checkout, compile, test, scan, and deploy.</span>
+              <span className="field-hint">The source revision to checkout, test, compile, scan, and deploy.</span>
             </div>
           )}
 
-          {/* STEP 4: Target Deployment Environment (Appears ONLY after Branch is selected) */}
+          {/* STEP 4: Work Item ID & Pipeline Variables */}
           {subcomponent && effectiveBranch && (
             <div className="progressive-field-group dynamic-fade-in">
               <div className="field-meta">
-                <span className={`step-tag ${environment ? "completed" : ""}`}>
-                  {environment ? "✓ Step 4" : "Step 4"}
-                </span>
-                <label htmlFor="environment-select">
-                  Target Deployment Environment <span>*</span>
-                </label>
-              </div>
-
-              <select
-                id="environment-select"
-                value={environment}
-                onChange={handleEnvironmentChange}
-                className="progressive-select"
-                required
-              >
-                <option value="">-- Select Deployment Environment --</option>
-                <option value="development">Development (Azure App Service)</option>
-                <option value="staging">Testing / Staging (Azure App Service - Staging Slot)</option>
-                <option value="production">Production (Azure App Service - High Availability Pair)</option>
-              </select>
-              {fieldErrors.environment && <span className="field-error-text">{fieldErrors.environment}</span>}
-              <span className="field-hint">Determines Azure resource group and cloud deployment target.</span>
-
-              {/* RBAC Notice for Production */}
-              {environment === "production" && (
-                <div className="rbac-notice-banner dynamic-fade-in">
-                  {isAdmin ? (
-                    <span>👑 <strong>Admin Authorized:</strong> You have full administrator credentials to execute production deployments directly.</span>
-                  ) : (
-                    <span>🛡️ <strong>Production Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Production deployment will pause after build, test, scan, package, and JFrog publish for Administrator approval before deploying to Azure.</span>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* STEP 5: Execution Metadata - Variable & Work Item ID */}
-          {subcomponent && effectiveBranch && environment && (
-            <div className="progressive-field-group dynamic-fade-in">
-              <div className="field-meta">
                 <span className={`step-tag ${workItemId || variables ? "completed" : ""}`}>
-                  Step 5
+                  {workItemId || variables ? "✓ Step 4" : "Step 4"}
                 </span>
                 <label>
                   Work Item & Pipeline Variables
@@ -486,6 +446,46 @@ function LaunchPipeline() {
             </div>
           )}
 
+          {/* STEP 5: Target Deployment Environment */}
+          {subcomponent && effectiveBranch && (
+            <div className="progressive-field-group dynamic-fade-in">
+              <div className="field-meta">
+                <span className={`step-tag ${environment ? "completed" : ""}`}>
+                  {environment ? "✓ Step 5" : "Step 5"}
+                </span>
+                <label htmlFor="environment-select">
+                  Target Deployment Environment <span>*</span>
+                </label>
+              </div>
+
+              <select
+                id="environment-select"
+                value={environment}
+                onChange={handleEnvironmentChange}
+                className="progressive-select"
+                required
+              >
+                <option value="">-- Select Deployment Environment --</option>
+                <option value="development">Development (Azure App Service)</option>
+                <option value="staging">Testing / Staging (Azure App Service - Staging Slot)</option>
+                <option value="production">Production (Azure App Service - High Availability Pair)</option>
+              </select>
+              {fieldErrors.environment && <span className="field-error-text">{fieldErrors.environment}</span>}
+              <span className="field-hint">Determines Azure resource group and cloud deployment target.</span>
+
+              {/* RBAC Notice for Production */}
+              {environment === "production" && (
+                <div className="rbac-notice-banner dynamic-fade-in">
+                  {isAdmin ? (
+                    <span>👑 <strong>Admin Authorized:</strong> You have full administrator credentials to execute production deployments directly.</span>
+                  ) : (
+                    <span>🛡️ <strong>Production Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Production deployment will pause after build, test, scan, package, and JFrog publish for Administrator approval before deploying to Azure.</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Configuration Review Summary & Confirmation */}
           {component && subcomponent && effectiveBranch && environment && (
             <div className="progressive-review-card dynamic-fade-in">
@@ -508,6 +508,22 @@ function LaunchPipeline() {
                     <td className="summary-field-val"><strong>{subLabel}</strong> <code className="sub-code">{subcomponent}</code></td>
                   </tr>
                   <tr>
+                    <td className="summary-field-name">Git Branch:</td>
+                    <td className="summary-field-val"><code className="sub-code">{effectiveBranch}</code></td>
+                  </tr>
+                  <tr>
+                    <td className="summary-field-name">Work Item ID:</td>
+                    <td className="summary-field-val">
+                      {workItemId ? <strong>{workItemId}</strong> : <span style={{ color: "var(--muted)" }}>None (Not specified)</span>}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="summary-field-name">Pipeline Variables:</td>
+                    <td className="summary-field-val">
+                      {variables ? <code className="sub-code">{variables}</code> : <span style={{ color: "var(--muted)" }}>None (Default)</span>}
+                    </td>
+                  </tr>
+                  <tr>
                     <td className="summary-field-name">Deployment Environment:</td>
                     <td className="summary-field-val">
                       <span className={`badge ${environment === "production" ? "running" : "success"}`} style={{ textTransform: "capitalize" }}>
@@ -515,18 +531,6 @@ function LaunchPipeline() {
                       </span>
                     </td>
                   </tr>
-                  {workItemId && (
-                    <tr>
-                      <td className="summary-field-name">Work Item ID:</td>
-                      <td className="summary-field-val"><strong>{workItemId}</strong></td>
-                    </tr>
-                  )}
-                  {variables && (
-                    <tr>
-                      <td className="summary-field-name">Pipeline Variables:</td>
-                      <td className="summary-field-val"><code className="sub-code">{variables}</code></td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
 

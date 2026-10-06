@@ -388,7 +388,7 @@ function CreatePipeline() {
 
               <div className="form-group" style={{ marginTop: 20 }}>
                 <label htmlFor="branchInput" className="field-label">
-                  Or enter custom branch / tag:
+                  Or enter custom branch:
                 </label>
                 <input
                   id="branchInput"
