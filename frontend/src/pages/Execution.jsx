@@ -21,7 +21,8 @@ import {
   Download,
   AlertTriangle,
   Play,
-  RotateCcw
+  RotateCcw,
+  X
 } from "lucide-react";
 import api from "../services/api";
 import { formatTime, duration, statusClass } from "../services/format";
@@ -888,11 +889,11 @@ function Execution() {
               aria-label="Close modal"
               title="Close modal"
             >
-              ✕
+              <X size={16} />
             </button>
 
             <div className={`modal-status-icon-circle ${isSuccess ? "success" : "failed"}`}>
-              {isSuccess ? <CheckCircle2 size={44} /> : <AlertCircle size={44} />}
+              {isSuccess ? <CheckCircle2 size={36} /> : <AlertCircle size={36} />}
             </div>
 
             <h2 className="modal-title">
@@ -932,36 +933,35 @@ function Execution() {
               {isSuccess ? (
                 <button
                   type="button"
-                  className="primary-button modal-btn"
+                  className="modal-btn modal-btn-azure"
                   onClick={() => {
                     setShowResultModal(false);
                     setActiveTab("azure");
                   }}
                 >
-                  <Cloud size={15} />
+                  <Cloud size={16} />
                   <span>View Azure Deployment</span>
                 </button>
               ) : (
                 <button
                   type="button"
-                  className="primary-button modal-btn"
-                  style={{ background: "var(--bad)", borderColor: "var(--bad)" }}
+                  className="modal-btn modal-btn-error"
                   onClick={() => {
                     setShowResultModal(false);
                     setActiveTab("logs");
                   }}
                 >
-                  <TerminalIcon size={15} />
+                  <TerminalIcon size={16} />
                   <span>Inspect Error Logs</span>
                 </button>
               )}
 
               <button
                 type="button"
-                className="secondary-button modal-btn"
+                className="modal-btn modal-btn-secondary"
                 onClick={() => navigate("/pipeline")}
               >
-                <RotateCcw size={14} />
+                <RotateCcw size={15} />
                 <span>Launch New Run</span>
               </button>
             </div>

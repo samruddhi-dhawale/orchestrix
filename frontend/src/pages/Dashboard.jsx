@@ -72,18 +72,19 @@ function Dashboard() {
       {/* Role Banner */}
       <div className="user-role-greeting-banner">
         <div className="greeting-text">
-          <strong>Welcome back, {user.name}</strong>
-          <span>
-            Logged in as <code>{user.role}</code>.{" "}
+          <div className="greeting-title-row">
+            <strong>Welcome back, {user.name}</strong>
+            <span className="role-tag-pill">{user.role}</span>
+          </div>
+          <span className="greeting-subtitle">
             {isAdmin
-              ? "You have full administrator privileges: Production authorization, cloud provisioning, and security gates."
-              : "You have developer privileges: Launch development/staging pipelines and view DevSecOps telemetry."}
+              ? "Administrator access enabled • Production release authorization active"
+              : "Developer workspace • Ready to launch and monitor deployment pipelines"}
           </span>
         </div>
         <button
-          className="text-button"
+          className="greeting-action-link"
           onClick={() => navigate("/pipeline")}
-          style={{ fontSize: 13, fontWeight: 600 }}
         >
           Launch New Run →
         </button>
@@ -102,7 +103,7 @@ function Dashboard() {
         </div>
 
         <div className="stat-card">
-          <span>In-Flight / Running</span>
+          <span>Running</span>
           <strong>{runningCount}</strong>
         </div>
 
