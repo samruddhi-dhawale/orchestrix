@@ -30,13 +30,6 @@ function Header({ onToggleMenu }) {
       </div>
 
       <div className="header-right">
-        <div className="environment-badge">
-          <Cloud size={14} style={{ marginRight: 6 }} color="#0078d4" />
-          <span>Azure Cloud</span>
-        </div>
-
-        <div className="header-divider"></div>
-
         <div className="user-menu-block">
           <div className="user-avatar-circle">
             {user.name.charAt(0).toUpperCase()}

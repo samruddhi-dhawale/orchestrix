@@ -446,9 +446,8 @@ function CreatePipeline() {
                   <span className="card-pill dev">Development</span>
                   {environment === "development" && <CheckCircle2 size={18} className="check-icon" />}
                 </div>
-                <h3>Development Environment</h3>
-                <p className="card-desc">Target: Azure App Service (Dev Cluster)</p>
-                <span className="azure-meta-tag">rg-orchestrix-development</span>
+                <h3>Development</h3>
+                <p className="card-desc">Target: Development Runtime Cluster</p>
               </div>
 
               <div
@@ -459,9 +458,8 @@ function CreatePipeline() {
                   <span className="card-pill staging">Staging</span>
                   {environment === "staging" && <CheckCircle2 size={18} className="check-icon" />}
                 </div>
-                <h3>Staging (Pre-Prod)</h3>
-                <p className="card-desc">Target: Azure App Service (Staging Slot)</p>
-                <span className="azure-meta-tag">rg-orchestrix-staging</span>
+                <h3>Staging</h3>
+                <p className="card-desc">Target: Staging Runtime Cluster</p>
               </div>
 
               <div
@@ -472,9 +470,8 @@ function CreatePipeline() {
                   <span className="card-pill prod">Production</span>
                   {environment === "production" && <CheckCircle2 size={18} className="check-icon" />}
                 </div>
-                <h3>Production Environment</h3>
-                <p className="card-desc">Target: Azure App Service (High-Availability Tier)</p>
-                <span className="azure-meta-tag">rg-orchestrix-production</span>
+                <h3>Production</h3>
+                <p className="card-desc">Target: Production High-Availability Cluster</p>
               </div>
             </div>
 

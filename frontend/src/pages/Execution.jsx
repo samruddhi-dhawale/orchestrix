@@ -279,11 +279,10 @@ function Execution() {
             <div>
               <h3>Production Release Approval Required</h3>
               <p>
-                Stages 1–6 (Checkout Source, Build, Test, Security Scan, Package, JFrog Publish) completed successfully.
-                Stage 7 (Production Approval) requires Administrator authorization before Stage 8 (Azure Cloud Deployment).
+                Initial pipeline stages completed successfully. Production release requires Administrator authorization before deployment.
               </p>
               <div className="approval-meta-row">
-                <span>Target: <strong>Microsoft Azure ({execution.pipelineRequest?.environment})</strong></span>
+                <span>Environment: <strong>{execution.pipelineRequest?.environment}</strong></span>
                 <span>•</span>
                 <span>Strategy: <strong>{execution.pipelineRequest?.deploymentStrategy || "BLUE_GREEN"}</strong></span>
                 <span>•</span>
@@ -527,7 +526,7 @@ function Execution() {
                       <p className="stage-description">
                         {executed?.message ||
                           (isStepPaused
-                            ? "Waiting for Administrator authorization before initiating Azure Cloud Deployment."
+                            ? "Waiting for Administrator authorization before initiating deployment."
                             : isCurrentlyRunning
                             ? "Executing orchestration commands..."
                             : "Waiting for preceding stage completion.")}
@@ -655,10 +654,10 @@ function Execution() {
           {/* Search & Filter Toolbar */}
           <div className="terminal-toolbar">
             <div className="toolbar-search-box">
-              <Search size={14} />
+              <Search size={14} style={{ flexShrink: 0 }} />
               <input
                 type="text"
-                placeholder="Search console output (e.g. cve, maven, azure, jfrog, error)..."
+                placeholder="Search console logs (e.g. test, build, artifact, error)..."
                 value={logSearch}
                 onChange={(e) => setLogSearch(e.target.value)}
               />

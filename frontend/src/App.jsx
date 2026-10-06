@@ -30,7 +30,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/pipeline" element={<LaunchPipeline />} />
             <Route path="/launch-pipeline" element={<LaunchPipeline />} />
-            <Route path="/pipelines" element={<Pipelines />} />
+            <Route path="/pipelines" element={<Navigate to="/pipeline" replace />} />
             <Route path="/executions" element={<Executions />} />
             <Route path="/execution/:executionId" element={<Execution />} />
             <Route path="/admin/audit" element={<AdminAudit />} />

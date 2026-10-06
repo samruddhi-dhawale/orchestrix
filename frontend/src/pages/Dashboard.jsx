@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Play, Cloud, Package } from "lucide-react";
+import { Play } from "lucide-react";
 import api from "../services/api";
 import { getCurrentUser } from "../services/auth";
 
@@ -57,7 +57,7 @@ function Dashboard() {
       <div className="page-header">
         <div>
           <h1>DevOps Orchestration Dashboard</h1>
-          <p>Real-time telemetry, DevSecOps gates, and multi-cloud deployment pipelines.</p>
+          <p>Automated CI/CD orchestration platform for managing, triggering, and monitoring end-to-end release pipelines.</p>
         </div>
         <button className="primary-button" onClick={() => navigate("/pipeline")}>
           <Play size={15} fill="currentColor" />
@@ -110,27 +110,6 @@ function Dashboard() {
           <strong>{failedCount}</strong>
         </div>
       </section>
-
-      {/* Cloud & Platform Status Grid */}
-      <div className="platform-integrations-bar" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
-        <div className="stat-card" style={{ padding: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <Cloud size={18} color="#0078d4" />
-            <strong style={{ fontSize: 14 }}>Microsoft Azure Cloud</strong>
-          </div>
-          <span style={{ fontSize: 12, color: "var(--muted)" }}>Blue/Green & Canary Slot Routing</span>
-          <span className="badge success" style={{ marginTop: 8 }}>Connected</span>
-        </div>
-
-        <div className="stat-card" style={{ padding: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <Package size={18} color="#40be46" />
-            <strong style={{ fontSize: 14 }}>JFrog Artifactory</strong>
-          </div>
-          <span style={{ fontSize: 12, color: "var(--muted)" }}>libs-release-local (SHA-256 Verified)</span>
-          <span className="badge success" style={{ marginTop: 8 }}>Verified</span>
-        </div>
-      </div>
     </div>
   );
 }

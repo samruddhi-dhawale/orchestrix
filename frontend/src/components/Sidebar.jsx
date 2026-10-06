@@ -67,15 +67,6 @@ function Sidebar({ isOpen = false, onClose }) {
           </NavLink>
 
           <NavLink
-            to="/pipelines"
-            onClick={handleNavClick}
-            className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
-          >
-            <span className="navigation-icon"><GitFork size={18} /></span>
-            <span>Pipelines</span>
-          </NavLink>
-
-          <NavLink
             to="/executions"
             onClick={handleNavClick}
             className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
@@ -140,7 +131,7 @@ function Sidebar({ isOpen = false, onClose }) {
 
         <div className="platform-status-mini">
           <span className="platform-status-dot"></span>
-          <span>Azure & JFrog Online</span>
+          <span>Pipeline Engine Active</span>
         </div>
       </div>
     </aside>

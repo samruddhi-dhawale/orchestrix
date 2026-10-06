@@ -834,7 +834,7 @@ function Login() {
         )}
 
         <div className="login-card-foot">
-          <span>Internal CI/CD Platform • Microsoft Azure & JFrog Artifactory</span>
+          <span>Internal CI/CD Orchestration Platform</span>
         </div>
       </div>
     </div>

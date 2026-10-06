@@ -174,12 +174,15 @@
   width: 320px;
 }
 
-.audit-search-box input {
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 13px;
-  background: transparent;
+.audit-search-box input,
+.audit-search-box input[type="text"] {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 0 0 6px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  background: transparent !important;
 }
 
 /* Table Card */

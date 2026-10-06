@@ -90,16 +90,15 @@ function Executions() {
       {/* Search & Filter Bar */}
       <div className="panel" style={{ padding: "16px 20px", marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 16 }}>
-          <div style={{ position: "relative" }}>
+          <div className="execution-search-wrapper">
+            <Search size={16} className="execution-search-icon" />
             <input
               type="text"
               placeholder="Search by Execution ID, Component, or Branch..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="high-contrast-input execution-search-input"
-              style={{ paddingLeft: "42px" }}
             />
-            <Search size={16} className="execution-search-icon" />
           </div>
 
           <div>

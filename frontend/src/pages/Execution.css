@@ -915,13 +915,14 @@
   max-width: 380px;
 }
 
-.toolbar-search-box input {
+.toolbar-search-box input,
+.toolbar-search-box input[type="text"] {
   background: transparent !important;
   border: none !important;
   color: #c9d1d9 !important;
   font-family: var(--mono);
   font-size: 12px !important;
-  padding: 0 !important;
+  padding: 0 0 0 6px !important;
   height: 24px !important;
   width: 100% !important;
   box-shadow: none !important;

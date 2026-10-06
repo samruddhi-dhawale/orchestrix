@@ -965,10 +965,14 @@ textarea {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
-.execution-search-input {
-  padding-left: 40px !important;
+.execution-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
+.execution-search-wrapper .execution-search-icon,
 .execution-search-icon {
   position: absolute;
   left: 14px;
@@ -976,6 +980,16 @@ textarea {
   transform: translateY(-50%);
   color: #64748b;
   pointer-events: none;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.execution-search-wrapper input.execution-search-input,
+.execution-search-wrapper input[type="text"].execution-search-input,
+input.execution-search-input,
+.execution-search-input {
+  padding-left: 46px !important;
+  width: 100%;
 }
 
 .high-contrast-input:focus,

@@ -415,7 +415,7 @@ function LaunchPipeline() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <div>
                   <label htmlFor="workitem-input" style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 6 }}>
-                    Work Item ID (Optional)
+                    Work Item ID
                   </label>
                   <input
                     id="workitem-input"
@@ -425,12 +425,12 @@ function LaunchPipeline() {
                     onChange={(e) => setWorkItemId(e.target.value)}
                     className="progressive-input"
                   />
-                  <span className="field-hint">Trace deployment to Jira or Azure Boards work item.</span>
+                  <span className="field-hint">Trace deployment to Jira or internal work tracking item.</span>
                 </div>
 
                 <div>
                   <label htmlFor="variables-input" style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 6 }}>
-                    Pipeline Variables (Optional)
+                    Pipeline Variables
                   </label>
                   <input
                     id="variables-input"
@@ -466,12 +466,12 @@ function LaunchPipeline() {
                 required
               >
                 <option value="">-- Select Deployment Environment --</option>
-                <option value="development">Development (Azure App Service)</option>
-                <option value="staging">Testing / Staging (Azure App Service - Staging Slot)</option>
-                <option value="production">Production (Azure App Service - High Availability Pair)</option>
+                <option value="development">Development</option>
+                <option value="staging">Staging</option>
+                <option value="production">Production</option>
               </select>
               {fieldErrors.environment && <span className="field-error-text">{fieldErrors.environment}</span>}
-              <span className="field-hint">Determines Azure resource group and cloud deployment target.</span>
+              <span className="field-hint">Determines the target runtime deployment environment.</span>
 
               {/* RBAC Notice for Production */}
               {environment === "production" && (
@@ -479,7 +479,7 @@ function LaunchPipeline() {
                   {isAdmin ? (
                     <span>👑 <strong>Admin Authorized:</strong> You have full administrator credentials to execute production deployments directly.</span>
                   ) : (
-                    <span>🛡️ <strong>Production Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Production deployment will pause after build, test, scan, package, and JFrog publish for Administrator approval before deploying to Azure.</span>
+                    <span>🛡️ <strong>Production Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Production deployment will pause after build, test, and artifact generation for Administrator approval before deploying.</span>
                   )}
                 </div>
               )}
