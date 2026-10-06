@@ -136,31 +136,38 @@ public class AuthSecurityTest {
     }
 
     @Test
-    public void testRateLimitingAfterFiveFailedAttempts() {
+    public void testRateLimitingDisabled() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         String attackerIp = "10.0.0.99";
         request.setRemoteAddr(attackerIp);
 
-        // 5 consecutive failed attempts
-        for (int i = 0; i < 5; i++) {
+        // Multiple failed attempts should not trigger 429 lockout
+        for (int i = 0; i < 6; i++) {
             ResponseEntity<?> res = authController.login(Map.of(
                     "username", "admin",
                     "password", "badpass" + i
             ), request);
-            if (i < 4) {
-                assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
-            } else {
-                // The 5th failed attempt triggers rate limiting
-                assertEquals(HttpStatus.TOO_MANY_REQUESTS, res.getStatusCode());
-            }
+            assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
         }
+    }
 
-        // 6th attempt is blocked immediately by rate limiter with 429
-        ResponseEntity<?> blockedRes = authController.login(Map.of(
-                "username", "admin",
-                "password", "admin123" // even with correct password!
+    @Test
+    public void testSuccessfulSamruddhiLogin() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("192.168.1.15");
+
+        ResponseEntity<?> response = authController.login(Map.of(
+                "username", "samruddhi",
+                "password", "samruddhi1"
         ), request);
-        assertEquals(HttpStatus.TOO_MANY_REQUESTS, blockedRes.getStatusCode());
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertNotNull(body);
+        assertEquals(true, body.get("authenticated"));
+        assertEquals("samruddhi", body.get("username"));
+        assertEquals("DEVELOPER", body.get("role"));
     }
 
     @Test

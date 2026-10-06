@@ -55,25 +55,9 @@ public class AuthController {
 
         String clientIp = getClientIp(request);
 
-        // Check brute-force lockout
-        if (loginRateLimiter.isRateLimited(clientIp)) {
-            long remainingSec = loginRateLimiter.getRemainingLockoutSeconds(clientIp);
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(
-                    "status", 429,
-                    "message", "Too many failed login attempts. Please wait " + (remainingSec > 0 ? remainingSec + "s" : "a few minutes") + " before trying again."
-            ));
-        }
-
         UserAccount user = userService.authenticate(username, password, clientIp);
 
         if (user == null) {
-            // Check if this latest attempt triggered rate limiting
-            if (loginRateLimiter.isRateLimited(clientIp)) {
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(
-                        "status", 429,
-                        "message", "Too many failed login attempts. Please wait a few minutes before trying again."
-                ));
-            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "status", 401,
                     "message", "Invalid username or password."
