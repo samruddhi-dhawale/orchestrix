@@ -85,8 +85,23 @@ public class PipelineValidationAndExecutionTest {
         req.setBranch("main");
         req.setEnvironment("development");
         req.setDeploymentStrategy("BLUE_GREEN");
+        req.setWorkItemId("12345");
 
         assertDoesNotThrow(() -> validator.validate(req));
+    }
+
+    @Test
+    void testValidationFailsWhenWorkItemIdContainsNonNumericCharacters() {
+        PipelineRequest req = new PipelineRequest();
+        req.setComponentId("component-a");
+        req.setSubcomponentId("sub-a1");
+        req.setBranch("main");
+        req.setEnvironment("development");
+        req.setDeploymentStrategy("BLUE_GREEN");
+        req.setWorkItemId("JIO-1024");
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> validator.validate(req));
+        assertTrue(ex.getMessage().contains("Work Item ID must contain only numbers"));
     }
 
     @Test

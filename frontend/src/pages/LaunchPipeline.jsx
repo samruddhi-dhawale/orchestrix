@@ -175,6 +175,10 @@ function LaunchPipeline() {
       errors.environment = "Please select a target deployment environment.";
     }
 
+    if (workItemId && !/^\d+$/.test(workItemId.trim())) {
+      errors.workItemId = "Work Item ID must contain only numbers.";
+    }
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setErrorMsg("Configuration validation failed. Please address the highlighted fields below.");
@@ -358,7 +362,7 @@ function LaunchPipeline() {
                 <option value="MK_LOG4J">MK_LOG4J</option>
                 <option value="PROD_FibrePON_HPOO">PROD_FibrePON_HPOO</option>
                 <option value="REPLICA_FibrePON_HPOO">REPLICA_FibrePON_HPOO</option>
-                <option value="custom">Custom Branch Name...</option>
+                <option value="custom">Custom Branch Name</option>
               </select>
 
               {branch === "custom" && (
@@ -396,12 +400,19 @@ function LaunchPipeline() {
               <input
                 id="workitem-input"
                 type="text"
-                placeholder="e.g. JIO-1042 or WI-5820"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="Enter numbers only (e.g. 1042)"
                 value={workItemId}
-                onChange={(e) => setWorkItemId(e.target.value)}
+                onChange={(e) => {
+                  const nums = e.target.value.replace(/\D/g, "");
+                  setWorkItemId(nums);
+                  setFieldErrors((prev) => ({ ...prev, workItemId: "" }));
+                }}
                 className="progressive-input"
               />
-              <span className="field-hint">Trace deployment to Jira or internal work tracking item.</span>
+              {fieldErrors.workItemId && <span className="field-error-text">{fieldErrors.workItemId}</span>}
+              <span className="field-hint">Numeric work item tracking ID (numbers only).</span>
             </div>
           )}
 

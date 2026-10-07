@@ -25,7 +25,7 @@ function CreatePipeline() {
   // Form values
   const [component, setComponent] = useState("");
   const [subcomponent, setSubcomponent] = useState("");
-  const [branch, setBranch] = useState("main");
+  const [branch, setBranch] = useState("ENT_JIMS4_SPRINT1");
   const [environment, setEnvironment] = useState("development");
 
   // Dynamic API options
@@ -178,7 +178,13 @@ function CreatePipeline() {
   const selectedSubcomponentName =
     subcomponents.find((s) => s.id === subcomponent)?.name || subcomponent;
 
-  const branchPresets = ["main", "develop", "feature/login", "release/v1.0"];
+  const branchPresets = [
+    "ENT_JIMS4_SPRINT1",
+    "ENT_JIMS4_SPRINT2",
+    "MK_LOG4J",
+    "PROD_FibrePON_HPOO",
+    "REPLICA_FibrePON_HPOO"
+  ];
 
   return (
     <div className="create-pipeline-page">

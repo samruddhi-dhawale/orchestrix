@@ -105,6 +105,14 @@ public class PipelineRequestValidator {
         if (!VALID_STRATEGIES.contains(strategy)) {
             throw new IllegalArgumentException("Invalid deployment strategy '" + request.getDeploymentStrategy() + "'. Allowed strategies: BLUE_GREEN, CANARY, ROLLING.");
         }
+
+        // 6. Work Item ID Validation (Must contain only numbers)
+        if (!isBlank(request.getWorkItemId())) {
+            String workItem = request.getWorkItemId().trim();
+            if (!workItem.matches("^\\d+$")) {
+                throw new IllegalArgumentException("Work Item ID must contain only numbers.");
+            }
+        }
     }
 
     private boolean isBlank(String str) {

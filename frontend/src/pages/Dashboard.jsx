@@ -2,11 +2,22 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
 import api from "../services/api";
+import RunsTable from "../components/RunsTable";
 
 function Dashboard() {
   const navigate = useNavigate();
 
-  const [runs, setRuns] = useState([]);
+  const [runs, setRuns] = useState(() => {
+    try {
+      const cached = localStorage.getItem("orchestrix_cached_runs");
+      if (cached && !cached.includes("exec-prod-7891")) {
+        return JSON.parse(cached);
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -23,11 +34,30 @@ function Dashboard() {
     api.get("/pipelines")
       .then((res) => {
         if (Array.isArray(res.data)) {
-          setRuns(res.data);
-          try {
-            localStorage.setItem("orchestrix_cached_runs", JSON.stringify(res.data));
-          } catch {
-            // ignore
+          if (res.data.length > 0) {
+            setRuns(res.data);
+            try {
+              localStorage.setItem("orchestrix_cached_runs", JSON.stringify(res.data));
+            } catch {
+              // ignore
+            }
+          } else {
+            // Keep cached runs if available, else empty
+            try {
+              const cached = localStorage.getItem("orchestrix_cached_runs");
+              if (cached && !cached.includes("exec-prod-7891")) {
+                const parsed = JSON.parse(cached);
+                if (parsed.length > 0) {
+                  setRuns(parsed);
+                } else {
+                  setRuns([]);
+                }
+              } else {
+                setRuns([]);
+              }
+            } catch {
+              setRuns([]);
+            }
           }
         }
         setError("");
@@ -100,6 +130,34 @@ function Dashboard() {
           <span>Failed Executions</span>
           <strong>{failedCount}</strong>
         </div>
+      </section>
+
+      {/* Platform Pipeline History Table */}
+      <section className="panel" style={{ marginTop: 24 }}>
+        <div className="panel-head">
+          <div>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Pipeline Execution History</h2>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--muted)" }}>
+              Overall history of pipelines executed across all users and environments.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/pipeline")}
+            className="secondary-button"
+            style={{ fontSize: 13 }}
+          >
+            Launch Pipeline →
+          </button>
+        </div>
+
+        {runs.length === 0 ? (
+          <div className="empty-state">
+            <h3>No pipeline executions yet</h3>
+            <p>Launch your first pipeline to see live orchestration logs and metrics.</p>
+          </div>
+        ) : (
+          <RunsTable runs={runs} />
+        )}
       </section>
     </div>
   );
