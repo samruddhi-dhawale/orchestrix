@@ -339,11 +339,11 @@ function Execution() {
 
           <div className="execution-submeta">
             <span>
-              <strong>Component:</strong> {execution.pipelineRequest?.componentId}
+              <strong>System:</strong> {execution.pipelineRequest?.componentId}
             </span>
             <span>•</span>
             <span>
-              <strong>Subcomponent:</strong> {execution.pipelineRequest?.subcomponentId}
+              <strong>Component:</strong> {execution.pipelineRequest?.subcomponentId}
             </span>
             <span>•</span>
             <span>
@@ -355,7 +355,7 @@ function Execution() {
             </span>
             <span>•</span>
             <span>
-              <strong>Environment:</strong> Azure ({execution.pipelineRequest?.environment})
+              <strong>Environment:</strong> {execution.pipelineRequest?.environment?.toUpperCase()}
             </span>
           </div>
         </div>

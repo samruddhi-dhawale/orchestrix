@@ -12,47 +12,47 @@ function Pipelines() {
   const defaultPipelines = [
     {
       id: "pipe-pay-prod",
-      name: "Payment Gateway Core",
+      name: "Payment Gateway System",
       component: "payment-gateway",
       subcomponent: "sub-pay-core",
       branch: "main",
-      environment: "production",
+      environment: "replica",
       lastStatus: "SUCCESS",
       lastRun: "42 mins ago",
-      target: "Azure App Service (Prod)",
+      target: "Azure App Service (Replica)",
     },
     {
       id: "pipe-core-dev",
-      name: "Component A (Core Platform)",
+      name: "System A (Core Platform)",
       component: "component-a",
       subcomponent: "sub-a1",
       branch: "develop",
-      environment: "development",
+      environment: "mut",
       lastStatus: "SUCCESS",
       lastRun: "2 hours ago",
-      target: "Azure App Service (Dev)",
+      target: "Azure App Service (MUT)",
     },
     {
       id: "pipe-auth-stg",
-      name: "Identity & Access Hub",
+      name: "Identity & Access System",
       component: "auth-service",
       subcomponent: "sub-auth-tokens",
       branch: "feature/refresh-token",
-      environment: "staging",
+      environment: "sit",
       lastStatus: "FAILED",
       lastRun: "5 hours ago",
-      target: "Azure App Service (Staging)",
+      target: "Azure App Service (SIT)",
     },
     {
       id: "pipe-data-prod",
-      name: "Component C (Data Engine)",
+      name: "System C (Data Engine)",
       component: "component-c",
       subcomponent: "sub-c1",
       branch: "main",
-      environment: "production",
+      environment: "replica",
       lastStatus: "SUCCESS",
       lastRun: "1 day ago",
-      target: "Azure App Service (Prod)",
+      target: "Azure App Service (Replica)",
     },
   ];
 
@@ -113,8 +113,8 @@ function Pipelines() {
           <table className="runs-table">
             <thead>
               <tr>
-                <th>Pipeline / Component</th>
-                <th>Subcomponent</th>
+                <th>Pipeline / System</th>
+                <th>Component</th>
                 <th>Branch</th>
                 <th>Environment</th>
                 <th>Target Cloud</th>
@@ -134,7 +134,7 @@ function Pipelines() {
                   <td><code>{p.subcomponent}</code></td>
                   <td><span className="mono">refs/heads/{p.branch}</span></td>
                   <td>
-                    <span className={`badge ${p.environment === "production" ? "running" : ""}`}>
+                    <span className={`badge ${p.environment === "replica" || p.environment === "production" ? "running" : "success"}`} style={{ textTransform: "uppercase" }}>
                       {p.environment}
                     </span>
                   </td>

@@ -24,7 +24,7 @@ public class PipelineRequestValidator {
     );
 
     private static final Set<String> VALID_ENVIRONMENTS = Set.of(
-            "development", "staging", "production"
+            "development", "staging", "production", "mut", "sit", "replica"
     );
 
     private static final Set<String> VALID_STRATEGIES = Set.of(
@@ -75,7 +75,7 @@ public class PipelineRequestValidator {
 
         String env = request.getEnvironment().trim().toLowerCase();
         if (!VALID_ENVIRONMENTS.contains(env)) {
-            throw new IllegalArgumentException("Invalid environment '" + request.getEnvironment() + "'. Allowed environments: development, staging, production.");
+            throw new IllegalArgumentException("Invalid environment '" + request.getEnvironment() + "'. Allowed environments: mut, sit, replica.");
         }
 
         // 5. Deployment Strategy Validation

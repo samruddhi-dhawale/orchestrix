@@ -108,9 +108,9 @@ function Executions() {
               className="high-contrast-input"
             >
               <option value="all">All Environments</option>
-              <option value="development">Development</option>
-              <option value="staging">Staging</option>
-              <option value="production">Production</option>
+              <option value="mut">MUT</option>
+              <option value="sit">SIT</option>
+              <option value="replica">Replica</option>
             </select>
           </div>
 

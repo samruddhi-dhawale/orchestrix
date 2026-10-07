@@ -9,7 +9,7 @@ function RunsTable({ runs }) {
         <thead>
           <tr>
             <th>Execution ID</th>
-            <th>Component / Subcomponent</th>
+            <th>System / Component</th>
             <th>Git Branch</th>
             <th>Environment</th>
             <th>Deployed By</th>
@@ -45,7 +45,7 @@ function RunsTable({ runs }) {
                   </span>
                 </td>
                 <td>
-                  <span style={{ textTransform: "capitalize" }}>
+                  <span style={{ textTransform: "uppercase" }}>
                     {r.pipelineRequest?.environment}
                   </span>
                 </td>

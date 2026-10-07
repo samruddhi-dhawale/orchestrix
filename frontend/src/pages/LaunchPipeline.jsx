@@ -21,7 +21,6 @@ function LaunchPipeline() {
   const [customBranch, setCustomBranch] = useState("");
   const [environment, setEnvironment] = useState("");
   const [strategy, setStrategy] = useState("BLUE_GREEN");
-  const [variables, setVariables] = useState("");
   const [workItemId, setWorkItemId] = useState("");
 
   // Data lists
@@ -34,34 +33,34 @@ function LaunchPipeline() {
   const [fieldErrors, setFieldErrors] = useState({});
 
   const fallbackComponents = [
-    { id: "component-a", name: "Component A (Core Platform)" },
-    { id: "component-b", name: "Component B (API Services)" },
-    { id: "component-c", name: "Component C (Data Engine)" },
-    { id: "payment-gateway", name: "Payment Gateway Service" },
-    { id: "auth-service", name: "Identity & Access Hub" },
+    { id: "component-a", name: "System A (Core Platform)" },
+    { id: "component-b", name: "System B (API Services)" },
+    { id: "component-c", name: "System C (Data Engine)" },
+    { id: "payment-gateway", name: "Payment Gateway System" },
+    { id: "auth-service", name: "Identity & Access System" },
   ];
 
   const fallbackSubcomponents = {
     "component-a": [
-      { id: "sub-a1", name: "Subcomponent A1 (Kernel Worker)" },
-      { id: "sub-a2", name: "Subcomponent A2 (Event Dispatcher)" },
-      { id: "sub-a3", name: "Subcomponent A3 (Edge Gateway)" },
+      { id: "sub-a1", name: "Component A1 (Kernel Worker)" },
+      { id: "sub-a2", name: "Component A2 (Event Dispatcher)" },
+      { id: "sub-a3", name: "Component A3 (Edge Gateway)" },
     ],
     "component-b": [
-      { id: "sub-b1", name: "Subcomponent B1 (REST API)" },
-      { id: "sub-b2", name: "Subcomponent B2 (GraphQL Gateway)" },
+      { id: "sub-b1", name: "Component B1 (REST API)" },
+      { id: "sub-b2", name: "Component B2 (GraphQL Gateway)" },
     ],
     "component-c": [
-      { id: "sub-c1", name: "Subcomponent C1 (ETL Pipeline)" },
-      { id: "sub-c2", name: "Subcomponent C2 (Cache Invalidator)" },
+      { id: "sub-c1", name: "Component C1 (ETL Pipeline)" },
+      { id: "sub-c2", name: "Component C2 (Cache Invalidator)" },
     ],
     "payment-gateway": [
-      { id: "sub-pay-core", name: "Payment Transaction Processor" },
-      { id: "sub-pay-webhooks", name: "Stripe & Razorpay Webhooks" },
+      { id: "sub-pay-core", name: "Component Pay-Core (Transaction Processor)" },
+      { id: "sub-pay-webhooks", name: "Component Pay-Webhooks (Webhooks Engine)" },
     ],
     "auth-service": [
-      { id: "sub-auth-oauth", name: "OAuth 2.0 / OIDC Server" },
-      { id: "sub-auth-tokens", name: "JWT Session Manager" },
+      { id: "sub-auth-oauth", name: "Component Auth-OAuth (OAuth 2.0 / OIDC Server)" },
+      { id: "sub-auth-tokens", name: "Component Auth-Tokens (JWT Session Manager)" },
     ],
   };
 
@@ -157,7 +156,6 @@ function LaunchPipeline() {
     setBranch("");
     setCustomBranch("");
     setEnvironment("");
-    setVariables("");
     setWorkItemId("");
     setStrategy("BLUE_GREEN");
     setErrorMsg("");
@@ -173,11 +171,11 @@ function LaunchPipeline() {
     const errors = {};
 
     if (!component) {
-      errors.component = "Please select an application component.";
+      errors.component = "Please select a system.";
     }
 
     if (!subcomponent) {
-      errors.subcomponent = "Please select a target subcomponent.";
+      errors.subcomponent = "Please select a component.";
     }
 
     if (!effectiveBranch) {
@@ -205,7 +203,7 @@ function LaunchPipeline() {
         branch: effectiveBranch,
         environment: environment,
         deploymentStrategy: strategy,
-        variables: variables.trim(),
+        variables: "",
         workItemId: workItemId.trim(),
         initiatedBy: user.name || user.username || "Developer",
         initiatedUsername: user.username || "developer",
@@ -283,19 +281,19 @@ function LaunchPipeline() {
             <p>Select options in sequence to configure your deployment pipeline.</p>
           </div>
           <span className="step-count-badge">
-            {environment ? "Review Ready" : `Step ${!component ? 1 : !subcomponent ? 2 : !effectiveBranch ? 3 : 4} of 5`}
+            {environment ? "Review Ready" : `Step ${!component ? 1 : !subcomponent ? 2 : !effectiveBranch ? 3 : workItemId ? 5 : 4} of 5`}
           </span>
         </div>
 
         <form onSubmit={handleLaunchPipeline} className="progressive-fields-stack">
-          {/* STEP 1: Application Component Dropdown (Always visible) */}
+          {/* STEP 1: System Dropdown (Always visible) */}
           <div className="progressive-field-group">
             <div className="field-meta">
               <span className={`step-tag ${component ? "completed" : ""}`}>
                 {component ? "✓ Step 1" : "Step 1"}
               </span>
               <label htmlFor="component-select">
-                Application Component <span>*</span>
+                System <span>*</span>
               </label>
             </div>
 
@@ -306,7 +304,7 @@ function LaunchPipeline() {
               className="progressive-select"
               required
             >
-              <option value="">-- Select Application Component --</option>
+              <option value="">-- Select System --</option>
               {components.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
@@ -314,10 +312,10 @@ function LaunchPipeline() {
               ))}
             </select>
             {fieldErrors.component && <span className="field-error-text">{fieldErrors.component}</span>}
-            <span className="field-hint">Defines the root service repository to orchestrate.</span>
+            <span className="field-hint">Defines the primary system to orchestrate.</span>
           </div>
 
-          {/* STEP 2: Target Subcomponent Dropdown (Appears ONLY after Component is selected) */}
+          {/* STEP 2: Component Dropdown (Appears ONLY after System is selected) */}
           {component && (
             <div className="progressive-field-group dynamic-fade-in">
               <div className="field-meta">
@@ -325,12 +323,12 @@ function LaunchPipeline() {
                   {subcomponent ? "✓ Step 2" : "Step 2"}
                 </span>
                 <label htmlFor="subcomponent-select">
-                  Target Subcomponent <span>*</span>
+                  Component <span>*</span>
                 </label>
               </div>
 
               {loadingSubcomponents ? (
-                <div className="field-loading-state">Loading subcomponents for {compLabel}...</div>
+                <div className="field-loading-state">Loading components for {compLabel}...</div>
               ) : (
                 <select
                   id="subcomponent-select"
@@ -339,7 +337,7 @@ function LaunchPipeline() {
                   className="progressive-select"
                   required
                 >
-                  <option value="">-- Select Subcomponent --</option>
+                  <option value="">-- Select Component --</option>
                   {subcomponents.map((sub) => (
                     <option key={sub.id} value={sub.id}>
                       {sub.name}
@@ -348,7 +346,7 @@ function LaunchPipeline() {
                 </select>
               )}
               {fieldErrors.subcomponent && <span className="field-error-text">{fieldErrors.subcomponent}</span>}
-              <span className="field-hint">Dynamic module belonging to {compLabel}.</span>
+              <span className="field-hint">Specific component module belonging to {compLabel}.</span>
             </div>
           )}
 
@@ -400,49 +398,27 @@ function LaunchPipeline() {
             </div>
           )}
 
-          {/* STEP 4: Work Item ID & Pipeline Variables */}
+          {/* STEP 4: Work Item ID */}
           {subcomponent && effectiveBranch && (
             <div className="progressive-field-group dynamic-fade-in">
               <div className="field-meta">
-                <span className={`step-tag ${workItemId || variables ? "completed" : ""}`}>
-                  {workItemId || variables ? "✓ Step 4" : "Step 4"}
+                <span className={`step-tag ${workItemId ? "completed" : ""}`}>
+                  {workItemId ? "✓ Step 4" : "Step 4"}
                 </span>
-                <label>
-                  Work Item & Pipeline Variables
+                <label htmlFor="workitem-input">
+                  Work Item ID
                 </label>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <div>
-                  <label htmlFor="workitem-input" style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 6 }}>
-                    Work Item ID
-                  </label>
-                  <input
-                    id="workitem-input"
-                    type="text"
-                    placeholder="e.g. JIO-1042 or WI-5820"
-                    value={workItemId}
-                    onChange={(e) => setWorkItemId(e.target.value)}
-                    className="progressive-input"
-                  />
-                  <span className="field-hint">Trace deployment to Jira or internal work tracking item.</span>
-                </div>
-
-                <div>
-                  <label htmlFor="variables-input" style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 6 }}>
-                    Pipeline Variables
-                  </label>
-                  <input
-                    id="variables-input"
-                    type="text"
-                    placeholder="e.g. APP_ENV=staging, DEBUG=false"
-                    value={variables}
-                    onChange={(e) => setVariables(e.target.value)}
-                    className="progressive-input"
-                  />
-                  <span className="field-hint">Custom environment flags or parameters for the run.</span>
-                </div>
-              </div>
+              <input
+                id="workitem-input"
+                type="text"
+                placeholder="e.g. JIO-1042 or WI-5820"
+                value={workItemId}
+                onChange={(e) => setWorkItemId(e.target.value)}
+                className="progressive-input"
+              />
+              <span className="field-hint">Trace deployment to Jira or internal work tracking item.</span>
             </div>
           )}
 
@@ -466,20 +442,20 @@ function LaunchPipeline() {
                 required
               >
                 <option value="">-- Select Deployment Environment --</option>
-                <option value="development">Development</option>
-                <option value="staging">Staging</option>
-                <option value="production">Production</option>
+                <option value="mut">MUT</option>
+                <option value="sit">SIT</option>
+                <option value="replica">Replica</option>
               </select>
               {fieldErrors.environment && <span className="field-error-text">{fieldErrors.environment}</span>}
               <span className="field-hint">Determines the target runtime deployment environment.</span>
 
-              {/* RBAC Notice for Production */}
-              {environment === "production" && (
+              {/* RBAC Notice for Replica / Production */}
+              {(environment === "replica" || environment === "production") && (
                 <div className="rbac-notice-banner dynamic-fade-in">
                   {isAdmin ? (
-                    <span>👑 <strong>Admin Authorized:</strong> You have full administrator credentials to execute production deployments directly.</span>
+                    <span>👑 <strong>Admin Authorized:</strong> You have full administrator credentials to execute {environment.toUpperCase()} deployments directly.</span>
                   ) : (
-                    <span>🛡️ <strong>Production Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Production deployment will pause after build, test, and artifact generation for Administrator approval before deploying.</span>
+                    <span>🛡️ <strong>Replica Approval Gate:</strong> You are logged in as <strong>{user.name}</strong>. Replica deployment will pause after build, test, and artifact generation for Administrator approval before deploying.</span>
                   )}
                 </div>
               )}
@@ -492,7 +468,7 @@ function LaunchPipeline() {
               <div className="review-title-row">
                 <div className="review-heading">
                   <CheckCircle2 size={18} color="var(--ok)" />
-                  <h3>Pipeline Configuration Summary</h3>
+                  <h3>Deployment Summary</h3>
                 </div>
                 <span className="manifest-ready-tag">READY TO LAUNCH</span>
               </div>
@@ -500,11 +476,11 @@ function LaunchPipeline() {
               <table className="review-summary-table">
                 <tbody>
                   <tr>
-                    <td className="summary-field-name">Application Component:</td>
+                    <td className="summary-field-name">System:</td>
                     <td className="summary-field-val"><strong>{compLabel}</strong> <code className="sub-code">{component}</code></td>
                   </tr>
                   <tr>
-                    <td className="summary-field-name">Target Subcomponent:</td>
+                    <td className="summary-field-name">Component:</td>
                     <td className="summary-field-val"><strong>{subLabel}</strong> <code className="sub-code">{subcomponent}</code></td>
                   </tr>
                   <tr>
@@ -518,15 +494,9 @@ function LaunchPipeline() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="summary-field-name">Pipeline Variables:</td>
-                    <td className="summary-field-val">
-                      {variables ? <code className="sub-code">{variables}</code> : <span style={{ color: "var(--muted)" }}>None (Default)</span>}
-                    </td>
-                  </tr>
-                  <tr>
                     <td className="summary-field-name">Deployment Environment:</td>
                     <td className="summary-field-val">
-                      <span className={`badge ${environment === "production" ? "running" : "success"}`} style={{ textTransform: "capitalize" }}>
+                      <span className={`badge ${environment === "replica" || environment === "production" ? "running" : "success"}`} style={{ textTransform: "uppercase" }}>
                         {environment}
                       </span>
                     </td>
