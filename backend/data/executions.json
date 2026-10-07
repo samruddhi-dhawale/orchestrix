@@ -1,1 +1,241 @@
-[]
+[ {
+  "executionId" : "82d10537-89e5-4635-bdf6-0295703c271e",
+  "pipelineRequest" : {
+    "componentId" : "Ent_Jio_Orchestrator",
+    "subcomponentId" : "JIMS_O2A_ServiceProvisioning_ETH",
+    "branch" : "PROD_FibrePON_HPOO",
+    "environment" : "mut",
+    "deploymentStrategy" : "BLUE_GREEN",
+    "initiatedBy" : "Samruddhi Dhawale",
+    "initiatedUsername" : "samruddhi",
+    "initiatedRole" : "DEVELOPER",
+    "variables" : "",
+    "workItemId" : ""
+  },
+  "status" : "SUCCESS",
+  "startedAt" : "2026-10-07T09:43:52.7767964",
+  "completedAt" : "2026-10-07T09:43:57.8535043",
+  "totalDurationMs" : 5076,
+  "progressPercentage" : 100,
+  "currentStepIndex" : 5,
+  "currentStepName" : "Completed",
+  "steps" : [ {
+    "stepName" : "Checkout Source",
+    "status" : "SUCCESS",
+    "message" : "Source checkout completed for branch 'PROD_FibrePON_HPOO' (Commit: bb67844)",
+    "durationMs" : 853,
+    "startedAt" : "09:43:53",
+    "completedAt" : "09:43:53"
+  }, {
+    "stepName" : "Test",
+    "status" : "SUCCESS",
+    "message" : "All 64 tests passed (93.8% coverage)",
+    "durationMs" : 1042,
+    "startedAt" : "09:43:54",
+    "completedAt" : "09:43:54"
+  }, {
+    "stepName" : "Build",
+    "status" : "SUCCESS",
+    "message" : "Maven compilation completed successfully for JIMS_O2A_ServiceProvisioning_ETH",
+    "durationMs" : 1232,
+    "startedAt" : "09:43:55",
+    "completedAt" : "09:43:55"
+  }, {
+    "stepName" : "Generate Artifact",
+    "status" : "SUCCESS",
+    "message" : "Artifact successfully generated: orchestrix-jims_o2a_serviceprovisioning_eth-1.0.0.jar (32.6 MB)",
+    "durationMs" : 871,
+    "startedAt" : "09:43:56",
+    "completedAt" : "09:43:56"
+  }, {
+    "stepName" : "Azure Cloud Deployment",
+    "status" : "SUCCESS",
+    "message" : "Deployed via BLUE_GREEN to Azure App Service (app-orchestrix-jims_o2a_serviceprovisioning_eth-mut) in mut",
+    "durationMs" : 1061,
+    "startedAt" : "09:43:57",
+    "completedAt" : "09:43:57"
+  } ],
+  "logs" : [ {
+    "timestamp" : "09:43:52",
+    "level" : "INFO",
+    "step" : "Init",
+    "message" : "Pipeline request accepted. Strategy: BLUE_GREEN | Triggered by: Samruddhi Dhawale"
+  }, {
+    "timestamp" : "09:43:53",
+    "level" : "INFO",
+    "step" : "Checkout Source",
+    "message" : "Connecting to Git repository: git@github.com:orchestrix/Ent_Jio_Orchestrator.git"
+  }, {
+    "timestamp" : "09:43:53",
+    "level" : "INFO",
+    "step" : "Checkout Source",
+    "message" : "Fetching remote refs for branch 'PROD_FibrePON_HPOO'..."
+  }, {
+    "timestamp" : "09:43:53",
+    "level" : "INFO",
+    "step" : "Checkout Source",
+    "message" : "Checked out commit revision: bb67844 (HEAD -> PROD_FibrePON_HPOO)"
+  }, {
+    "timestamp" : "09:43:53",
+    "level" : "SUCCESS",
+    "step" : "Checkout Source",
+    "message" : "Git workspace clean, checked out branch 'PROD_FibrePON_HPOO' at commit #bb67844"
+  }, {
+    "timestamp" : "09:43:54",
+    "level" : "INFO",
+    "step" : "Test",
+    "message" : "Running test runner: JUnit 5 / Mockito / AssertJ suite..."
+  }, {
+    "timestamp" : "09:43:54",
+    "level" : "INFO",
+    "step" : "Test",
+    "message" : "Running com.orchestrix.JIMS_O2A_ServiceProvisioning_ETH.AutomatedTestSuite"
+  }, {
+    "timestamp" : "09:43:54",
+    "level" : "INFO",
+    "step" : "Test",
+    "message" : "Executing 48 Unit Tests... [OK]"
+  }, {
+    "timestamp" : "09:43:54",
+    "level" : "INFO",
+    "step" : "Test",
+    "message" : "Executing 16 Integration Tests with Spring Test... [OK]"
+  }, {
+    "timestamp" : "09:43:54",
+    "level" : "INFO",
+    "step" : "Test",
+    "message" : "Code Coverage: 93.8% (JaCoCo report generated at target/site/jacoco/index.html)"
+  }, {
+    "timestamp" : "09:43:54",
+    "level" : "SUCCESS",
+    "step" : "Test",
+    "message" : "All 64 tests passed successfully with 0 failures and 0 errors."
+  }, {
+    "timestamp" : "09:43:55",
+    "level" : "INFO",
+    "step" : "Build",
+    "message" : "Executing build tool: Apache Maven 3.9.16 (Java 17)"
+  }, {
+    "timestamp" : "09:43:55",
+    "level" : "INFO",
+    "step" : "Build",
+    "message" : "Scanning for Maven projects and resolving dependencies..."
+  }, {
+    "timestamp" : "09:43:55",
+    "level" : "INFO",
+    "step" : "Build",
+    "message" : "Compiling Java source files for subcomponent [JIMS_O2A_ServiceProvisioning_ETH] with javac 17..."
+  }, {
+    "timestamp" : "09:43:55",
+    "level" : "INFO",
+    "step" : "Build",
+    "message" : "Writing compiled bytecode to target/classes"
+  }, {
+    "timestamp" : "09:43:55",
+    "level" : "SUCCESS",
+    "step" : "Build",
+    "message" : "Maven build compilation finished successfully with 0 errors."
+  }, {
+    "timestamp" : "09:43:56",
+    "level" : "INFO",
+    "step" : "Generate Artifact",
+    "message" : "Generating deployable artifact (JAR) for subcomponent: jims_o2a_serviceprovisioning_eth"
+  }, {
+    "timestamp" : "09:43:56",
+    "level" : "INFO",
+    "step" : "Generate Artifact",
+    "message" : "Building artifact package: target/orchestrix-jims_o2a_serviceprovisioning_eth-1.0.0.jar (32.6 MB) | SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852416"
+  }, {
+    "timestamp" : "09:43:56",
+    "level" : "INFO",
+    "step" : "Generate Artifact",
+    "message" : "Artifact published to repository index: libs-release-local"
+  }, {
+    "timestamp" : "09:43:56",
+    "level" : "SUCCESS",
+    "step" : "Generate Artifact",
+    "message" : "Artifact successfully generated: orchestrix-jims_o2a_serviceprovisioning_eth-1.0.0.jar"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Connecting to Microsoft Azure Cloud API..."
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Target Resource Group: rg-orchestrix-mut (East US)"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Target App Service: app-orchestrix-jims_o2a_serviceprovisioning_eth-mut"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Executing Blue/Green Deployment Strategy (Zero-Downtime Release)..."
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Deploying artifact to Azure App Service slot: [staging] (Green Environment)"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Running pre-swap health probe on staging slot: GET /actuator/health -> 200 OK"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Executing zero-downtime Azure slot swap: [staging] <--> [production]"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "SUCCESS",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Azure Blue/Green slot swap completed with zero downtime (0 dropped connections)."
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "INFO",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Executing automated health probe: https://app-orchestrix-jims_o2a_serviceprovisioning_eth-mut.azurewebsites.net/actuator/health"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "SUCCESS",
+    "step" : "Azure Cloud Deployment",
+    "message" : "Health Probe: 200 OK (Status: UP, Components: DB=OK, Cache=OK, Disk=78% Free)"
+  }, {
+    "timestamp" : "09:43:57",
+    "level" : "SUCCESS",
+    "step" : "Orchestrator",
+    "message" : "Pipeline finished successfully in 5.08s. All 5 stages completed."
+  } ],
+  "artifact" : {
+    "name" : "orchestrix-jims_o2a_serviceprovisioning_eth-1.0.0.jar",
+    "packaging" : "JAR",
+    "version" : "1.0.0",
+    "size" : "32.6 MB",
+    "checksumSha256" : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852416",
+    "repository" : "libs-release-local",
+    "repositoryUrl" : "https://jfrog.orchestrix.io/artifactory/libs-release-local/com/orchestrix/jims_o2a_serviceprovisioning_eth/1.0.0/orchestrix-jims_o2a_serviceprovisioning_eth-1.0.0.jar",
+    "publishedAt" : "2026-10-07 09:43:56"
+  },
+  "deployment" : {
+    "environment" : "mut",
+    "subscription" : "Azure Subscription (Orchestrix Cloud #9812-Azure)",
+    "resourceGroup" : "rg-orchestrix-mut",
+    "appServiceName" : "app-orchestrix-jims_o2a_serviceprovisioning_eth-mut",
+    "region" : "East US",
+    "status" : "DEPLOYED",
+    "liveUrl" : "https://app-orchestrix-jims_o2a_serviceprovisioning_eth-mut.azurewebsites.net",
+    "healthCheckUrl" : "https://app-orchestrix-jims_o2a_serviceprovisioning_eth-mut.azurewebsites.net/actuator/health",
+    "healthStatus" : "200 OK - Healthy",
+    "deployedAt" : "2026-10-07 09:43:57",
+    "strategy" : "BLUE_GREEN",
+    "slot" : "staging <-> production (Swapped)",
+    "approvedBy" : "Auto-Approved"
+  },
+  "totalStages" : 5,
+  "stageNames" : [ "Checkout Source", "Test", "Build", "Generate Artifact", "Azure Cloud Deployment" ]
+} ]

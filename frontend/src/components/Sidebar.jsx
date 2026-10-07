@@ -1,14 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Play, GitFork, History, Settings, Cloud, LogOut, ShieldCheck, UserCheck, X } from "lucide-react";
+import { LayoutDashboard, Play, GitFork, History, User, LogOut, ShieldCheck, UserCheck, X } from "lucide-react";
 import { getCurrentUser, logout } from "../services/auth";
 import "./Sidebar.css";
 
 function Sidebar({ isOpen = false, onClose }) {
   const navigate = useNavigate();
-  const rawUser = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
+  const rawUser = getCurrentUser() || { name: "User", role: "DEVELOPER" };
   const user = {
     ...rawUser,
-    name: rawUser.name && rawUser.name.includes("Lead") ? "Developer" : (rawUser.name || "Developer"),
+    name: rawUser.name && rawUser.name.includes("Lead") ? "User" : (rawUser.name || "User"),
   };
   const isAdmin = user.role === "ADMIN";
 
@@ -77,15 +77,15 @@ function Sidebar({ isOpen = false, onClose }) {
         </div>
 
         <div className="navigation-section">
-          <span className="navigation-label">INFRASTRUCTURE</span>
+          <span className="navigation-label">PREFERENCES</span>
 
           <NavLink
             to="/settings"
             onClick={handleNavClick}
             className={({ isActive }) => `navigation-item ${isActive ? "active" : ""}`}
           >
-            <span className="navigation-icon"><Settings size={18} /></span>
-            <span>Settings & Cloud</span>
+            <span className="navigation-icon"><User size={18} /></span>
+            <span>User Profile</span>
           </NavLink>
         </div>
 

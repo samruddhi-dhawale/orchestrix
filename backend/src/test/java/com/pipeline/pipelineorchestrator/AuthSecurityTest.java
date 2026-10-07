@@ -210,7 +210,7 @@ public class AuthSecurityTest {
                 "name", "Samruddhi Dhawale",
                 "username", "samruddhi",
                 "password", "secretPass123",
-                "email", "samruddhi@orchestrix.io",
+                "email", "samruddhi@ril.com",
                 "role", "DEVELOPER"
         ), request);
 
@@ -227,6 +227,16 @@ public class AuthSecurityTest {
                 "password", "secretPass123"
         ), request);
         assertEquals(HttpStatus.OK, loginRes.getStatusCode());
+
+        // Verify registration fails if email does not end with @ril.com
+        ResponseEntity<?> invalidEmailRes = authController.register(Map.of(
+                "name", "External User",
+                "username", "extuser",
+                "password", "secretPass123",
+                "email", "extuser@gmail.com",
+                "role", "DEVELOPER"
+        ), request);
+        assertEquals(HttpStatus.BAD_REQUEST, invalidEmailRes.getStatusCode());
     }
 
     @Test

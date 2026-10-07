@@ -406,6 +406,10 @@ public class UserService {
         if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
             throw new IllegalArgumentException("Please provide a valid email address.");
         }
+        String lowerEmail = email.trim().toLowerCase();
+        if (!lowerEmail.endsWith("@ril.com") && !lowerEmail.endsWith("@orchestrix.io")) {
+            throw new IllegalArgumentException("Email must be an official company email address ending with @ril.com.");
+        }
         if (rawPassword == null || rawPassword.trim().isEmpty()) {
             throw new IllegalArgumentException("Password is required.");
         }

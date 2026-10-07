@@ -73,11 +73,11 @@ function RunsTable({ runs }) {
                       <strong style={{ fontSize: 13, color: "var(--text)" }}>
                         @{r.pipelineRequest?.initiatedUsername || (r.pipelineRequest?.initiatedBy ? r.pipelineRequest.initiatedBy.toLowerCase().replace(/\s+/g, "-") : "developer")}
                       </strong>
-                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        {r.pipelineRequest?.initiatedBy && r.pipelineRequest.initiatedBy !== r.pipelineRequest.initiatedUsername
-                          ? r.pipelineRequest.initiatedBy
-                          : (r.pipelineRequest?.initiatedRole || "DEVELOPER")}
-                      </span>
+                      {r.pipelineRequest?.initiatedBy && r.pipelineRequest.initiatedBy !== r.pipelineRequest.initiatedUsername ? (
+                        <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                          {r.pipelineRequest.initiatedBy}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </td>

@@ -6,11 +6,10 @@ import { logout } from "../services/auth";
 function Settings() {
   const navigate = useNavigate();
   const [user, setUser] = useState({
-    username: "developer",
-    name: "Developer",
-    role: "DevOps Engineer / Developer",
-    email: "developer@orchestrix.io",
-    organization: "Orchestrix Core Platform",
+    username: "user",
+    name: "User",
+    email: "user@ril.com",
+    organization: "JIIMS",
   });
 
   useEffect(() => {
@@ -20,7 +19,7 @@ function Settings() {
         const parsed = JSON.parse(stored);
         if (parsed.name) {
           if (parsed.name.includes("Lead")) {
-            parsed.name = "Developer";
+            parsed.name = "User";
           }
           setUser(parsed);
         }
@@ -38,7 +37,7 @@ function Settings() {
     <div className="settings-page">
       <div className="page-header">
         <div>
-          <h1>User Profile & Settings</h1>
+          <h1>User Profile</h1>
           <p>User profile and account credentials.</p>
         </div>
         <button className="secondary-button" onClick={handleLogout}>
@@ -83,7 +82,7 @@ function Settings() {
               <span className="mono" style={{ fontSize: 11, color: "var(--muted)", display: "block", marginBottom: 4, letterSpacing: "0.04em" }}>
                 EMAIL
               </span>
-              <strong style={{ fontSize: 14 }}>{user.email || `${user.username}@jiims.com`}</strong>
+              <strong style={{ fontSize: 14 }}>{user.email || `${user.username}@ril.com`}</strong>
             </div>
 
             <div>

@@ -262,11 +262,7 @@ function LaunchPipeline() {
       )}
 
       <div className="progressive-form-card">
-        <div className="form-card-title">
-          <div className="title-left">
-            <h2>Pipeline Setup</h2>
-            <p>Select options in sequence to configure your deployment pipeline.</p>
-          </div>
+        <div className="form-card-title" style={{ justifyContent: "flex-end", padding: "14px 28px" }}>
           <span className="step-count-badge">
             {environment ? "Review Ready" : `Step ${!component ? 1 : !subcomponent ? 2 : !effectiveBranch ? 3 : workItemId ? 5 : 4} of 5`}
           </span>

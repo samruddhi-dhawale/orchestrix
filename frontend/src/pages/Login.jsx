@@ -176,7 +176,7 @@ function Login() {
               username: u,
               role: u === "admin" ? "ADMIN" : "DEVELOPER",
               name: u === "admin" ? "System Administrator" : "Samruddhi Dhawale",
-              email: `${u}@orchestrix.io`,
+              email: `${u}@ril.com`,
               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.mock_session_token",
               authenticated: true,
             };
@@ -194,7 +194,7 @@ function Login() {
               username: u,
               role: u === "admin" ? "ADMIN" : "DEVELOPER",
               name: u === "admin" ? "System Administrator" : "Samruddhi Dhawale",
-              email: `${u}@orchestrix.io`,
+              email: `${u}@ril.com`,
               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.mock_session_token",
               authenticated: true,
             };
@@ -218,7 +218,7 @@ function Login() {
             username: u,
             role: u === "admin" ? "ADMIN" : "DEVELOPER",
             name: u === "admin" ? "System Administrator" : "Samruddhi Dhawale",
-            email: `${u}@orchestrix.io`,
+            email: `${u}@ril.com`,
             token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.mock_session_token",
             authenticated: true,
           };
@@ -255,8 +255,8 @@ function Login() {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please provide a valid work or organization email address.");
+    if (!emailRegex.test(email) || !email.endsWith("@ril.com")) {
+      setError("Email must be an official company email address ending with @ril.com");
       return;
     }
 
@@ -620,7 +620,7 @@ function Login() {
                       type="email"
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
-                      placeholder="Enter your work/organization email"
+                      placeholder="Enter your company email (e.g. name@ril.com)"
                       autoComplete="email"
                       disabled={loading}
                       required

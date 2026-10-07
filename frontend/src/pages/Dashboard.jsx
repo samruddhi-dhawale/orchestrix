@@ -2,16 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
 import api from "../services/api";
-import { getCurrentUser } from "../services/auth";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const rawUser = getCurrentUser() || { name: "Developer", role: "DEVELOPER" };
-  const user = {
-    ...rawUser,
-    name: rawUser.name && rawUser.name.includes("Lead") ? "Developer" : (rawUser.name || "Developer"),
-  };
-  const isAdmin = user.role === "ADMIN";
 
   const [runs, setRuns] = useState([]);
   const [error, setError] = useState("");
@@ -77,7 +70,7 @@ function Dashboard() {
       <div className="user-role-greeting-banner">
         <div className="greeting-text">
           <div className="greeting-title-row">
-            <strong>Welcome to CI/CD Platform</strong>
+            <strong>Welcome to Pipeline Platform</strong>
           </div>
           <span className="greeting-subtitle">
             Enterprise release management & deployment pipeline orchestration
@@ -101,11 +94,6 @@ function Dashboard() {
         <div className="stat-card ok">
           <span>Successful Releases</span>
           <strong>{successCount}</strong>
-        </div>
-
-        <div className="stat-card">
-          <span>Running</span>
-          <strong>{runningCount}</strong>
         </div>
 
         <div className="stat-card bad">
