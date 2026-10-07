@@ -282,9 +282,7 @@ function Execution() {
                 Initial pipeline stages completed successfully. Production release requires Administrator authorization before deployment.
               </p>
               <div className="approval-meta-row">
-                <span>Environment: <strong>{execution.pipelineRequest?.environment}</strong></span>
-                <span>•</span>
-                <span>Strategy: <strong>{execution.pipelineRequest?.deploymentStrategy || "BLUE_GREEN"}</strong></span>
+                <span>Environment: <strong>{execution.pipelineRequest?.environment?.toUpperCase()}</strong></span>
                 <span>•</span>
                 <span>Branch: <code>{execution.pipelineRequest?.branch}</code></span>
               </div>
@@ -349,10 +347,14 @@ function Execution() {
             <span>
               <strong>Branch:</strong> <code>{execution.pipelineRequest?.branch}</code>
             </span>
-            <span>•</span>
-            <span>
-              <strong>Strategy:</strong> {execution.pipelineRequest?.deploymentStrategy || "BLUE_GREEN"}
-            </span>
+            {execution.pipelineRequest?.workItemId && (
+              <>
+                <span>•</span>
+                <span>
+                  <strong>Work Item:</strong> <code>{execution.pipelineRequest?.workItemId}</code>
+                </span>
+              </>
+            )}
             <span>•</span>
             <span>
               <strong>Environment:</strong> {execution.pipelineRequest?.environment?.toUpperCase()}
