@@ -574,12 +574,12 @@ function Execution() {
                       </div>
                       <div className="telemetry-item">
                         <span className="telemetry-label">Environment</span>
-                        <span className="telemetry-value" style={{ textTransform: "capitalize" }}>
-                          {execution.pipelineRequest?.environment || "Staging"}
+                        <span className="telemetry-value" style={{ textTransform: "uppercase" }}>
+                          {execution.pipelineRequest?.environment || "MUT"}
                         </span>
                       </div>
                       <div className="telemetry-item">
-                        <span className="telemetry-label">Component</span>
+                        <span className="telemetry-label">System / Component</span>
                         <span className="telemetry-value mono">
                           {execution.pipelineRequest?.componentId}
                           {execution.pipelineRequest?.subcomponentId && ` / ${execution.pipelineRequest.subcomponentId}`}
@@ -740,12 +740,12 @@ function Execution() {
               </div>
               <div className="modal-detail-item">
                 <span className="modal-detail-label">Environment</span>
-                <strong style={{ textTransform: "capitalize" }}>
-                  {execution.pipelineRequest?.environment || "Staging"}
+                <strong style={{ textTransform: "uppercase" }}>
+                  {execution.pipelineRequest?.environment || "MUT"}
                 </strong>
               </div>
               <div className="modal-detail-item">
-                <span className="modal-detail-label">Component</span>
+                <span className="modal-detail-label">System</span>
                 <strong className="mono">{execution.pipelineRequest?.componentId || "Core"}</strong>
               </div>
               <div className="modal-detail-item">
