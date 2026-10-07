@@ -144,72 +144,7 @@ public class ExecutionService {
             }
         }
 
-        // If file was not found or was empty, seed the 4 deployed pipelines
-        if (executions.isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-
-            // Run 1: Production Core Platform
-            seedExecution(
-                    "exec-prod-7891",
-                    "component-a",
-                    "sub-a1",
-                    "main",
-                    "production",
-                    ExecutionStatus.SUCCESS,
-                    now.minusHours(3),
-                    7850L,
-                    "BLUE_GREEN",
-                    "Developer",
-                    "DEVELOPER"
-            );
-
-            // Run 2: Staging Payment Gateway
-            seedExecution(
-                    "exec-stag-6420",
-                    "payment-gateway",
-                    "sub-pay-core",
-                    "release/v2.4",
-                    "staging",
-                    ExecutionStatus.SUCCESS,
-                    now.minusHours(6),
-                    6420L,
-                    "ROLLING",
-                    "Developer",
-                    "DEVELOPER"
-            );
-
-            // Run 3: Development API Services
-            seedExecution(
-                    "exec-dev-5120",
-                    "component-b",
-                    "sub-b1",
-                    "feature/jwt-auth",
-                    "development",
-                    ExecutionStatus.SUCCESS,
-                    now.minusDays(1),
-                    5120L,
-                    "BLUE_GREEN",
-                    "Developer",
-                    "DEVELOPER"
-            );
-
-            // Run 4: Production Identity & Access Hub
-            seedExecution(
-                    "exec-prod-4309",
-                    "auth-service",
-                    "sub-auth-oauth",
-                    "main",
-                    "production",
-                    ExecutionStatus.SUCCESS,
-                    now.minusDays(2),
-                    8110L,
-                    "CANARY",
-                    "System Administrator",
-                    "ADMIN"
-            );
-
-            persistExecutions();
-        }
+        // No dummy seed records: pipelines start at 0 executions
     }
 
     public PipelineExecution executePipeline(PipelineRequest request) {

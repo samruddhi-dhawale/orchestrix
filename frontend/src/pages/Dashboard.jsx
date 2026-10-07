@@ -13,18 +13,20 @@ function Dashboard() {
   };
   const isAdmin = user.role === "ADMIN";
 
-  const [runs, setRuns] = useState(() => {
-    try {
-      const cached = localStorage.getItem("orchestrix_cached_runs");
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [runs, setRuns] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem("orchestrix_cached_runs");
+      if (cached && cached.includes("exec-prod-7891")) {
+        localStorage.removeItem("orchestrix_cached_runs");
+      }
+    } catch {
+      // ignore
+    }
+
     api.get("/pipelines")
       .then((res) => {
         if (Array.isArray(res.data)) {
@@ -38,9 +40,13 @@ function Dashboard() {
         setError("");
       })
       .catch(() => {
-        const cached = localStorage.getItem("orchestrix_cached_runs");
-        if (!cached) {
-          setError("Unable to connect to backend on port 8080. Check if Spring Boot is running.");
+        try {
+          const cached = localStorage.getItem("orchestrix_cached_runs");
+          if (cached && !cached.includes("exec-prod-7891")) {
+            setRuns(JSON.parse(cached));
+          }
+        } catch {
+          // ignore
         }
       })
       .finally(() => setLoading(false));
@@ -67,17 +73,14 @@ function Dashboard() {
 
       {error && <div className="inline-error">{error}</div>}
 
-      {/* Role Banner */}
+      {/* Company-Wide Platform Greeting Banner */}
       <div className="user-role-greeting-banner">
         <div className="greeting-text">
           <div className="greeting-title-row">
-            <strong>Welcome back, {user.name}</strong>
-            <span className="role-tag-pill">{user.role}</span>
+            <strong>Welcome to CI/CD Platform</strong>
           </div>
           <span className="greeting-subtitle">
-            {isAdmin
-              ? "Administrator access enabled • Production release authorization active"
-              : "Developer workspace • Ready to launch and monitor deployment pipelines"}
+            Enterprise release management & deployment pipeline orchestration
           </span>
         </div>
         <button

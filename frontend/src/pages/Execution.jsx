@@ -153,7 +153,7 @@ function Execution() {
       <div className="execution-page">
         <div className="execution-loading">
           <div className="loading-spinner"></div>
-          <h2>Connecting to Orchestrix Engine</h2>
+          <h2>Connecting to CI/CD Engine</h2>
           <p>Retrieving real-time pipeline execution details for #{executionId}...</p>
         </div>
       </div>
@@ -629,7 +629,7 @@ function Execution() {
               <span className="dot green"></span>
             </div>
             <div className="terminal-title">
-              <span>console@orchestrix-runner:~ /execution/{execution.executionId.slice(0, 8)}</span>
+              <span>console@cicd-runner:~ /execution/{execution.executionId.slice(0, 8)}</span>
             </div>
             <div className="terminal-actions">
               <button

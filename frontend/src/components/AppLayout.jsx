@@ -31,7 +31,7 @@ function AppLayout() {
         </main>
 
         <footer className="app-footer">
-          <span>© 2026 Orchestrix</span>
+          <span>© 2026 CI/CD Platform</span>
 
           <span className="footer-status">
             <span className="footer-status-dot"></span>

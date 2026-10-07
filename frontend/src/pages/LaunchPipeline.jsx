@@ -33,35 +33,22 @@ function LaunchPipeline() {
   const [fieldErrors, setFieldErrors] = useState({});
 
   const fallbackComponents = [
-    { id: "component-a", name: "System A (Core Platform)" },
-    { id: "component-b", name: "System B (API Services)" },
-    { id: "component-c", name: "System C (Data Engine)" },
-    { id: "payment-gateway", name: "Payment Gateway System" },
-    { id: "auth-service", name: "Identity & Access System" },
+    { id: "Ent_Jio_Inventory_System", name: "Ent_Jio_Inventory_System" },
+    { id: "Ent_Jio_Orchestrator", name: "Ent_Jio_Orchestrator" },
+    { id: "Ent_MF_OO", name: "Ent_MF_OO (operations Orchestration)" },
+  ];
+
+  const commonSubcomponents = [
+    { id: "JIMS_O2A_ServiceProvisioning_ETH", name: "JIMS_O2A_ServiceProvisioning_ETH" },
+    { id: "Enterprise_JIMS_O2AWebservices_And_Tools_Camunda", name: "Enterprise_JIMS_O2AWebservices_And_Tools_Camunda" },
+    { id: "JIMS_Ent_Webservices_and_Tools_ILL", name: "JIMS_Ent_Webservices_and_Tools_ILL" },
+    { id: "JIMS_O2A_ServiceProvisioning", name: "JIMS_O2A_ServiceProvisioning" },
   ];
 
   const fallbackSubcomponents = {
-    "component-a": [
-      { id: "sub-a1", name: "Component A1 (Kernel Worker)" },
-      { id: "sub-a2", name: "Component A2 (Event Dispatcher)" },
-      { id: "sub-a3", name: "Component A3 (Edge Gateway)" },
-    ],
-    "component-b": [
-      { id: "sub-b1", name: "Component B1 (REST API)" },
-      { id: "sub-b2", name: "Component B2 (GraphQL Gateway)" },
-    ],
-    "component-c": [
-      { id: "sub-c1", name: "Component C1 (ETL Pipeline)" },
-      { id: "sub-c2", name: "Component C2 (Cache Invalidator)" },
-    ],
-    "payment-gateway": [
-      { id: "sub-pay-core", name: "Component Pay-Core (Transaction Processor)" },
-      { id: "sub-pay-webhooks", name: "Component Pay-Webhooks (Webhooks Engine)" },
-    ],
-    "auth-service": [
-      { id: "sub-auth-oauth", name: "Component Auth-OAuth (OAuth 2.0 / OIDC Server)" },
-      { id: "sub-auth-tokens", name: "Component Auth-Tokens (JWT Session Manager)" },
-    ],
+    "Ent_Jio_Inventory_System": commonSubcomponents,
+    "Ent_Jio_Orchestrator": commonSubcomponents,
+    "Ent_MF_OO": commonSubcomponents,
   };
 
   useEffect(() => {
@@ -370,11 +357,11 @@ function LaunchPipeline() {
                 required
               >
                 <option value="">-- Select Git Branch --</option>
-                <option value="main">main (Production Stable Branch)</option>
-                <option value="develop">develop (Active Integration Branch)</option>
-                <option value="feature/login">feature/login (Feature Branch)</option>
-                <option value="release/v1.0">release/v1.0 (Release Candidate)</option>
-                <option value="feature/broken-test">feature/broken-test (Simulate Test Failure Demo)</option>
+                <option value="ENT_JIMS4_SPRINT1">ENT_JIMS4_SPRINT1</option>
+                <option value="ENT_JIMS4_SPRINT2">ENT_JIMS4_SPRINT2</option>
+                <option value="MK_LOG4J">MK_LOG4J</option>
+                <option value="PROD_FibrePON_HPOO">PROD_FibrePON_HPOO</option>
+                <option value="REPLICA_FibrePON_HPOO">REPLICA_FibrePON_HPOO</option>
                 <option value="custom">Custom Branch Name...</option>
               </select>
 

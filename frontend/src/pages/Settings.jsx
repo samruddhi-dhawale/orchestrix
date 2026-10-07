@@ -68,9 +68,6 @@ function Settings() {
             </div>
             <div>
               <h2 style={{ fontSize: 20, margin: 0, fontWeight: 600 }}>{user.name}</h2>
-              <span className="badge success" style={{ marginTop: 6 }}>
-                {user.role}
-              </span>
             </div>
           </div>
 
@@ -86,14 +83,14 @@ function Settings() {
               <span className="mono" style={{ fontSize: 11, color: "var(--muted)", display: "block", marginBottom: 4, letterSpacing: "0.04em" }}>
                 EMAIL
               </span>
-              <strong style={{ fontSize: 14 }}>{user.email || `${user.username}@orchestrix.io`}</strong>
+              <strong style={{ fontSize: 14 }}>{user.email || `${user.username}@jiims.com`}</strong>
             </div>
 
             <div>
               <span className="mono" style={{ fontSize: 11, color: "var(--muted)", display: "block", marginBottom: 4, letterSpacing: "0.04em" }}>
                 ORGANIZATION
               </span>
-              <strong style={{ fontSize: 14 }}>{user.organization || "Orchestrix Cloud Platform"}</strong>
+              <strong style={{ fontSize: 14 }}>JIIMS</strong>
             </div>
           </div>
         </div>

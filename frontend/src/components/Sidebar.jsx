@@ -25,11 +25,11 @@ function Sidebar({ isOpen = false, onClose }) {
       <div className="sidebar-brand">
         <div className="brand-identity-group">
           <div className="brand-mark">
-            O
+            C
           </div>
 
           <div className="brand-content">
-            <span className="brand-name">ORCHESTRIX</span>
+            <span className="brand-name">CI/CD PLATFORM</span>
             <span className="brand-subtitle">DevOps Orchestration</span>
           </div>
         </div>
@@ -113,16 +113,13 @@ function Sidebar({ isOpen = false, onClose }) {
             </div>
             <div className="user-text-meta">
               <span className="user-full-name">{user.name}</span>
-              <span className={`user-role-badge ${isAdmin ? "admin" : "dev"}`}>
-                {isAdmin ? "Administrator" : "Developer"}
-              </span>
             </div>
           </div>
 
           <button
             onClick={handleLogout}
             className="sidebar-logout-btn"
-            title="Sign out of Orchestrix"
+            title="Sign out of CI/CD Platform"
           >
             <LogOut size={14} />
             <span>Sign Out</span>

@@ -15,12 +15,30 @@ import com.pipeline.pipelineorchestrator.model.PipelineRequest;
 @Component
 public class PipelineRequestValidator {
 
-    private static final Map<String, Set<String>> VALID_COMPONENTS = Map.of(
-            "component-a", Set.of("sub-a1", "sub-a2", "sub-a3"),
-            "component-b", Set.of("sub-b1", "sub-b2"),
-            "component-c", Set.of("sub-c1", "sub-c2"),
-            "payment-gateway", Set.of("sub-pay-core", "sub-pay-webhooks"),
-            "auth-service", Set.of("sub-auth-oauth", "sub-auth-tokens")
+    private static final Map<String, Set<String>> VALID_COMPONENTS = Map.ofEntries(
+            Map.entry("ent_jio_inventory_system", Set.of(
+                    "jims_o2a_serviceprovisioning_eth",
+                    "enterprise_jims_o2awebservices_and_tools_camunda",
+                    "jims_ent_webservices_and_tools_ill",
+                    "jims_o2a_serviceprovisioning"
+            )),
+            Map.entry("ent_jio_orchestrator", Set.of(
+                    "jims_o2a_serviceprovisioning_eth",
+                    "enterprise_jims_o2awebservices_and_tools_camunda",
+                    "jims_ent_webservices_and_tools_ill",
+                    "jims_o2a_serviceprovisioning"
+            )),
+            Map.entry("ent_mf_oo", Set.of(
+                    "jims_o2a_serviceprovisioning_eth",
+                    "enterprise_jims_o2awebservices_and_tools_camunda",
+                    "jims_ent_webservices_and_tools_ill",
+                    "jims_o2a_serviceprovisioning"
+            )),
+            Map.entry("component-a", Set.of("sub-a1", "sub-a2", "sub-a3")),
+            Map.entry("component-b", Set.of("sub-b1", "sub-b2")),
+            Map.entry("component-c", Set.of("sub-c1", "sub-c2")),
+            Map.entry("payment-gateway", Set.of("sub-pay-core", "sub-pay-webhooks")),
+            Map.entry("auth-service", Set.of("sub-auth-oauth", "sub-auth-tokens"))
     );
 
     private static final Set<String> VALID_ENVIRONMENTS = Set.of(

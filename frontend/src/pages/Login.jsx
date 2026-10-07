@@ -446,10 +446,10 @@ function Login() {
         {/* Platform Header */}
         <div className="login-title-section">
           <div className="login-app-logo">
-            <span className="logo-letter">O</span>
+            <span className="logo-letter">C</span>
           </div>
-          <h1>ORCHESTRIX</h1>
-          <p className="login-app-tagline">CI/CD Pipeline Orchestration & Cloud Platform</p>
+          <h1>CI/CD PLATFORM</h1>
+          <p className="login-app-tagline">JIIMS CI/CD Pipeline Orchestration Platform</p>
         </div>
 
         {/* Dynamic Alerts */}

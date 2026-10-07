@@ -24,9 +24,9 @@ function Header({ onToggleMenu }) {
         </button>
 
         <div className="header-page-title">
-          Orchestrix Platform
+          CI/CD Platform
         </div>
-        <span className="header-subtitle-tag">CI/CD Platform</span>
+        <span className="header-subtitle-tag">DevOps Engine</span>
       </div>
 
       <div className="header-right">
@@ -37,9 +37,6 @@ function Header({ onToggleMenu }) {
 
           <div className="user-info-text">
             <span className="user-name">{user.name}</span>
-            <span className={`role-pill ${isAdmin ? "admin" : "dev"}`}>
-              {isAdmin ? "👑 Admin" : "💻 Developer"}
-            </span>
           </div>
 
           <button
